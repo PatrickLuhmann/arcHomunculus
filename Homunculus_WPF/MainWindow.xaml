@@ -7,6 +7,14 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        
+        <StackPanel>
+            <TextBlock FontSize="18" Text="Title area; this will eventually become a binding"/>
+            <ListView Name="splitsListView">
+                
+            </ListView>
+            <Button Name="successButton" Margin="5,5,5,5">SUCCESS</Button>
+            <Button Name="failureButton" Margin="5,5,5,5">FAILURE</Button>
+            <TextBlock FontSize="24" Text="Timer will be here"/>
+        </StackPanel>
     </Grid>
 </Window>
