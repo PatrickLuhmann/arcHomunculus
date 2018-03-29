@@ -4,16 +4,54 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Homunculus_WPF"
+        xmlns:vm="clr-namespace:Homunculus_ViewModel;assembly=Homunculus_ViewModel"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
+    <Window.DataContext>
+        <vm:SplitsViewModel />
+    </Window.DataContext>
+    <Window.Resources>
+        <Style TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        </Style>
+
+        <DataTemplate x:Key="PbValueTemplate">
+            <TextBlock HorizontalAlignment="Center"
+                       Text="{Binding PbValue}"/>
+        </DataTemplate>
+    </Window.Resources>
     <Grid>
         <StackPanel>
             <TextBlock FontSize="18" Text="Title area; this will eventually become a binding"/>
-            <ListView Name="splitsListView">
-                
+            <ListView Name="splitsListView" ItemsSource="{Binding SplitList}">
+                <ListView.View>
+                    <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="Split Progress">
+                        <GridViewColumn Header="Split" Width="500"
+                                        DisplayMemberBinding="{Binding SplitName}"/>
+                        <GridViewColumn Header="Now" Width="75">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding CurrentValue}" TextAlignment="Center" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Diff" Width="75">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DiffValue}" TextAlignment="Center" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <!-- This is a different way of defining the cell template. -->
+                        <GridViewColumn Header="PB" Width="75"
+                                        CellTemplate="{StaticResource PbValueTemplate}"/>
+                    </GridView>
+                </ListView.View>
             </ListView>
-            <Button Name="successButton" Margin="5,5,5,5">SUCCESS</Button>
-            <Button Name="failureButton" Margin="5,5,5,5">FAILURE</Button>
+            <StackPanel Orientation="Horizontal">
+                <Button Name="successButton" Margin="5,5,5,5">SUCCESS</Button>
+                <Button Name="failureButton" Margin="5,5,5,5">FAILURE</Button>
+            </StackPanel>
             <TextBlock FontSize="24" Text="Timer will be here"/>
         </StackPanel>
     </Grid>
