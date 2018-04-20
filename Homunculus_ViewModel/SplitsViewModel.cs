@@ -11,7 +11,7 @@ using System.Windows.Controls;
 
 namespace Homunculus_ViewModel
 {
-    public class SplitsViewModel
+    public class SplitsViewModel : INotifyPropertyChanged
 	{
 		#region View properties
 		private ObservableCollection<SplitVM> splitList;
@@ -19,6 +19,7 @@ namespace Homunculus_ViewModel
 
 		public string SuccessButtonText { get; set; }
 		public string FailureButtonText {  get { return "Failure"; } }
+		public string CreateChallengeButtonText { get { return "Create Challenge"; } }
 		#endregion
 
 		private int CurrentSplit = 0;
@@ -60,6 +61,27 @@ namespace Homunculus_ViewModel
 			// Recalculate the difference.
 			splitList[CurrentSplit].DiffValue = 
 				splitList[CurrentSplit].CurrentPbValue - splitList[CurrentSplit].CurrentValue;
+
+			// TODO: This Add causes the list in MainWindow to be modified and shown, but the
+			// CreateChallenge window only shows the original list items.
+			splitList.Add(new SplitVM { SplitName = "New Failure Split" });
+		}
+
+		public void AddSplitProc(int selectedSplit)
+		{
+			// TODO: Add the new item at an arbitrary point.
+			splitList.Add(new SplitVM { SplitName = "New Split" });
+			// TODO: Do I need to do something here to get the list to update in the UI?
+		}
+
+		// I copied this from a web page. I do not know what it does.
+		public event PropertyChangedEventHandler PropertyChanged;
+		private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+		{
+			if (PropertyChanged != null)
+			{
+				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
 		}
 	}
 

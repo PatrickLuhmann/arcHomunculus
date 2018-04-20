@@ -13,5 +13,9 @@ namespace Homunculus_WPF
 	/// </summary>
 	public partial class App : Application
 	{
+		public App()
+		{
+			// TODO: Allocate the application data/state object?
+		}
 	}
 }

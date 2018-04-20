@@ -48,5 +48,14 @@ namespace Homunculus_WPF
 			if (splitsListView.SelectedIndex == splitsListView.Items.Count)
 				splitsListView.SelectedIndex = -1;
 		}
+
+		private void createChallengeButton_Click(object sender, RoutedEventArgs e)
+		{
+			// Display Create Challenge window.
+			var wnd = new CreateChallengeWindow((SplitsViewModel)DataContext);
+			wnd.Show();
+
+			// TODO: Do we need to do something with the split list here?
+		}
 	}
 }

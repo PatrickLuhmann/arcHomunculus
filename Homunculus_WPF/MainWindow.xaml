@@ -59,7 +59,7 @@
                 <Button Name="failureButton" Click="failureButton_Click" Margin="5,5,5,5" Content="{Binding FailureButtonText}"/>
             </StackPanel>
             <TextBlock FontSize="24" Text="Timer will be here"/>
-            
+            <Button Name="createChallengeButton" Click="createChallengeButton_Click" Margin="5,5,5,5" Content="{Binding CreateChallengeButtonText}"/>
         </StackPanel>
     </Grid>
 </Window>
