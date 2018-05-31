@@ -17,10 +17,64 @@ namespace Homunculus_ViewModel
 		private ObservableCollection<SplitVM> splitList;
 		public ObservableCollection<SplitVM> SplitList { get { return splitList; } }
 
+        private string splitTextList;
+        public string SplitTextList
+        {
+            get
+            {
+#if true
+                splitTextList = "";
+                foreach(var split in splitList)
+                {
+                    string text = split.SplitName;
+                    splitTextList += text + Environment.NewLine;
+                }
+#endif
+                return splitTextList;
+            }
+
+            set
+            {
+                // Grab the contents of the text box.
+                splitTextList = value;
+
+                // Extract the individual lines, ignoring empty lines.
+                string[] lines = splitTextList.Split(new string[] { Environment.NewLine },
+                    StringSplitOptions.RemoveEmptyEntries);
+
+#if false
+                // Recreate the split text list.
+                splitTextList = "";
+                foreach(string s in lines)
+                {
+                    splitTextList += s + Environment.NewLine;
+                }
+#endif
+                // Make a new splitList.
+                splitList = new ObservableCollection<SplitVM>();
+                foreach (string s in lines)
+                {
+                    splitList.Add(new SplitVM { SplitName = s,
+                        CurrentValue = 0,
+                        DiffValue = 0,
+                        CurrentPbValue = 0 });
+                }
+
+                // For now, a new split list means starting over from the beginning.
+                CurrentSplit = 0;
+
+                // Manually trigger a UI update because the property is not us.
+                // TODO: Is there a better way to do this? I don't want to make the property
+                // writable, do I? If it was writable, wouldn't it trigger a UI update every
+                // time I did an Add in the loop above? That doesn't sound good.
+                PropertyChanged(this, new PropertyChangedEventArgs("SplitList"));
+            }
+        }
+
 		public string SuccessButtonText { get; set; }
 		public string FailureButtonText {  get { return "Failure"; } }
 		public string CreateChallengeButtonText { get { return "Create Challenge"; } }
-		#endregion
+#endregion
 
 		private int CurrentSplit = 0;
 
@@ -35,7 +89,10 @@ namespace Homunculus_ViewModel
 			splitList.Add(new SplitVM { SplitName = "Pursuer", CurrentValue = 0, DiffValue = 0, CurrentPbValue = 0 });
 			splitList.Add(new SplitVM { SplitName = "Last Giant", CurrentValue = 0, DiffValue = 0, CurrentPbValue = 0 });
 			splitList.Add(new SplitVM { SplitName = "Pursuer", CurrentValue = 0, DiffValue = 0, CurrentPbValue = 0 });
-			
+
+            // TODO: Placeholder data.
+            splitTextList = "This string should never be seen.";
+
 			SuccessButtonText = "Success";
 		}
 
@@ -61,10 +118,6 @@ namespace Homunculus_ViewModel
 			// Recalculate the difference.
 			splitList[CurrentSplit].DiffValue = 
 				splitList[CurrentSplit].CurrentPbValue - splitList[CurrentSplit].CurrentValue;
-
-			// TODO: This Add causes the list in MainWindow to be modified and shown, but the
-			// CreateChallenge window only shows the original list items.
-			splitList.Add(new SplitVM { SplitName = "New Failure Split" });
 		}
 
 		public void AddSplitProc(int selectedSplit)

@@ -17,7 +17,7 @@
                 <Button Click="addButton_Click" Margin="5">Add</Button>
                 <Button Margin="5">Move Up</Button>
                 <Button Margin="5">Move Down</Button>
-                <Button Margin="5">Delete</Button>
+                <Button Margin="5" Content="{Binding FailureButtonText}"/>
             </StackPanel>
             <ListBox Name="splitsListBox" ItemsSource="{Binding SplitList}">
                 <ListBox.ItemTemplate>
@@ -28,6 +28,12 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
+            <TextBox Name="splitsTextBox"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     VerticalScrollBarVisibility="Visible"
+                     Text="{Binding SplitTextList}"
+                     />
         </StackPanel>
 
     </Grid>

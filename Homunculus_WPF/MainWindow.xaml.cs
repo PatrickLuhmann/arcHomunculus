@@ -30,11 +30,13 @@ namespace Homunculus_WPF
 
 		private void failureButton_Click(object sender, RoutedEventArgs e)
 		{
-			// TODO: I don't like this implementation. I don't want the View to 
-			// know the name of the class of the ViewModel because they should be
-			// separate. However, this same class name is given in the XAML in
-			// the DataContext section, so what is the big deal?
-			((SplitsViewModel)DataContext).FailureProc();
+            // Let the ViewModel do its thing.
+            ((SplitsViewModel)DataContext).FailureProc();
+
+            // TODO: Do we do things with color here, or should that be
+            // somewhere else? Eventually the user will be able to load
+            // an in-progress run, and that list will need to be colored
+            // before the button is pressed, so probably not here.
 		}
 
 		private void successButton_Click(object sender, RoutedEventArgs e)
@@ -55,7 +57,12 @@ namespace Homunculus_WPF
 			var wnd = new CreateChallengeWindow((SplitsViewModel)DataContext);
 			wnd.Show();
 
-			// TODO: Do we need to do something with the split list here?
+            // For now, clicking this button will reset the current run. This is likely
+            // not what the user wants, but we need to start somewhere.
+            // TODO: If the user canceled the create operation, how would we know
+            // that here? Add a new property to the VM that communicates this fact? That
+            // seems a bit clumsy.
+            splitsListView.SelectedIndex = 0;
 		}
 	}
 }
