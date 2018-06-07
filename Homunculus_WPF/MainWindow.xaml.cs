@@ -30,13 +30,13 @@ namespace Homunculus_WPF
 
 		private void failureButton_Click(object sender, RoutedEventArgs e)
 		{
-            // Let the ViewModel do its thing.
-            ((SplitsViewModel)DataContext).FailureProc();
+			// Let the ViewModel do its thing.
+			((SplitsViewModel)DataContext).FailureProc();
 
-            // TODO: Do we do things with color here, or should that be
-            // somewhere else? Eventually the user will be able to load
-            // an in-progress run, and that list will need to be colored
-            // before the button is pressed, so probably not here.
+			// TODO: Do we do things with color here, or should that be
+			// somewhere else? Eventually the user will be able to load
+			// an in-progress run, and that list will need to be colored
+			// before the button is pressed, so probably not here.
 		}
 
 		private void successButton_Click(object sender, RoutedEventArgs e)
@@ -57,12 +57,12 @@ namespace Homunculus_WPF
 			var wnd = new CreateChallengeWindow((SplitsViewModel)DataContext);
 			Nullable<bool> ret = wnd.ShowDialog(); // ShowDialog is blocking.
 
-            if (ret == true)
-            {
-                // For now, editing the splits will reset the current run. This is likely
-                // not what the user wants, but we need to start somewhere.
-                splitsListView.SelectedIndex = 0;
-            }
-        }
+			if (ret == true)
+			{
+				// For now, editing the splits will reset the current run. This is likely
+				// not what the user wants, but we need to start somewhere.
+				splitsListView.SelectedIndex = 0;
+			}
+		}
 	}
 }
