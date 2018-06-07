@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:Homunculus_WPF"
         xmlns:vm="clr-namespace:Homunculus_ViewModel;assembly=Homunculus_ViewModel"
         mc:Ignorable="d"
-        Title="CreateChallengeWindow" Height="450" Width="800">
+        Title="CreateChallengeWindow" Height="450" Width="800"
+        WindowStartupLocation="CenterOwner">
     <Grid>
         <StackPanel>
             <StackPanel Orientation="Horizontal">
@@ -17,7 +18,7 @@
                 <Button Click="addButton_Click" Margin="5">Add</Button>
                 <Button Margin="5">Move Up</Button>
                 <Button Margin="5">Move Down</Button>
-                <Button Margin="5" Content="{Binding FailureButtonText}"/>
+                <Button Margin="5">Delete</Button>
             </StackPanel>
             <ListBox Name="splitsListBox" ItemsSource="{Binding SplitList}">
                 <ListBox.ItemTemplate>
@@ -32,8 +33,11 @@
                      TextWrapping="Wrap"
                      AcceptsReturn="True"
                      VerticalScrollBarVisibility="Visible"
-                     Text="{Binding SplitTextList}"
                      />
+            <StackPanel Orientation="Horizontal">
+                <Button Name="okButton" Margin="5" Click="okButton_Click" IsDefault="True">OK</Button>
+                <Button Name="cancelButton" Margin="5" IsCancel="True">Cancel</Button>
+            </StackPanel>
         </StackPanel>
 
     </Grid>

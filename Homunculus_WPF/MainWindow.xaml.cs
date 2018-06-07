@@ -55,14 +55,14 @@ namespace Homunculus_WPF
 		{
 			// Display Create Challenge window.
 			var wnd = new CreateChallengeWindow((SplitsViewModel)DataContext);
-			wnd.Show();
+			Nullable<bool> ret = wnd.ShowDialog(); // ShowDialog is blocking.
 
-            // For now, clicking this button will reset the current run. This is likely
-            // not what the user wants, but we need to start somewhere.
-            // TODO: If the user canceled the create operation, how would we know
-            // that here? Add a new property to the VM that communicates this fact? That
-            // seems a bit clumsy.
-            splitsListView.SelectedIndex = 0;
-		}
+            if (ret == true)
+            {
+                // For now, editing the splits will reset the current run. This is likely
+                // not what the user wants, but we need to start somewhere.
+                splitsListView.SelectedIndex = 0;
+            }
+        }
 	}
 }
