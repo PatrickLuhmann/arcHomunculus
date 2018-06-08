@@ -33,6 +33,18 @@ namespace UnitTest_ViewModel
 			string splits = "one\r\ntwo\r\nthree";
 			vm.SetSplits(splits);
 			Assert.AreEqual(3, vm.SplitList.Count);
+			Assert.AreEqual("one", vm.SplitList[0].SplitName);
+			Assert.AreEqual(0, vm.SplitList[0].CurrentValue);
+			Assert.AreEqual(0, vm.SplitList[0].DiffValue);
+			Assert.AreEqual(0, vm.SplitList[0].CurrentPbValue);
+			Assert.AreEqual("two", vm.SplitList[1].SplitName);
+			Assert.AreEqual(0, vm.SplitList[1].CurrentValue);
+			Assert.AreEqual(0, vm.SplitList[1].DiffValue);
+			Assert.AreEqual(0, vm.SplitList[1].CurrentPbValue);
+			Assert.AreEqual("three", vm.SplitList[2].SplitName);
+			Assert.AreEqual(0, vm.SplitList[2].CurrentValue);
+			Assert.AreEqual(0, vm.SplitList[2].DiffValue);
+			Assert.AreEqual(0, vm.SplitList[2].CurrentPbValue);
 			Assert.AreEqual("one\r\ntwo\r\nthree\r\n", vm.SplitTextList);
 
 			splits = "";
