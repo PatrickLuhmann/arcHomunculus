@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Homunculus_Model", "Homuncu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest_Homunculus_Model", "UnitTest_Homunculus_Model\UnitTest_Homunculus_Model.csproj", "{D2BA6BBD-FDE7-45CE-A28B-A69BED8D9A04}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest_ViewModel", "UnitTest_ViewModel\UnitTest_ViewModel.csproj", "{04E82C86-31EC-4480-BD72-6BF8F7418A88}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{D2BA6BBD-FDE7-45CE-A28B-A69BED8D9A04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2BA6BBD-FDE7-45CE-A28B-A69BED8D9A04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2BA6BBD-FDE7-45CE-A28B-A69BED8D9A04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04E82C86-31EC-4480-BD72-6BF8F7418A88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04E82C86-31EC-4480-BD72-6BF8F7418A88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04E82C86-31EC-4480-BD72-6BF8F7418A88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04E82C86-31EC-4480-BD72-6BF8F7418A88}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -42,9 +42,18 @@ namespace Homunculus_ViewModel
 		#region View methods
 		/// <summary>
 		/// Indicate success for the current split.
+		/// 
+		/// There must be at least one split defined before this method can be called. If
+		/// this is not the case, ArgumentOutOfRangeException will be thrown.
 		/// </summary>
 		public void SuccessProc()
 		{
+			// If the user has not defined a split yet, throw an exception. This
+			// should never happen; it is the responsibility of other code to
+			// enforce this rule.  The exception is to help debugging.
+			if (splitList.Count == 0)
+				throw new System.ArgumentOutOfRangeException();
+
 			// Go to the next split.
 			CurrentSplit++;
 
@@ -58,6 +67,9 @@ namespace Homunculus_ViewModel
 
 		/// <summary>
 		/// Indicate failure for the current split.
+		/// 
+		/// There must be at least one split defined before this method can be called. If
+		/// this is not the case, ArgumentOutOfRangeException will be thrown.
 		/// </summary>
 		public void FailureProc()
 		{
@@ -75,7 +87,10 @@ namespace Homunculus_ViewModel
 		/// <param name="splits">List of splits, as newline-separated values.</param>
 		public void SetSplits(string splits)
 		{
-			// Grab the contents of the text box.
+			if (null == splits)
+				splits = "";
+
+			// Grab the contents of the input.
 			splitTextList = splits;
 
 			// Extract the individual lines, ignoring empty lines.
@@ -102,7 +117,12 @@ namespace Homunculus_ViewModel
 			// TODO: Is there a better way to do this? I don't want to make the property
 			// writable, do I? If it was writable, wouldn't it trigger a UI update every
 			// time I did an Add in the loop above? That doesn't sound good.
-			PropertyChanged(this, new PropertyChangedEventArgs("SplitList"));
+			//PropertyChanged(this, new PropertyChangedEventArgs("SplitList"));
+			// NOTE: I found a code sample that calls NotifyPropertyChanged(). It works
+			// in the GUI, but has a different result when this function is unit tested.
+			// I do not know the difference and I don't know which is better. This one
+			// doesn't create a new object so I am going to use it.
+			NotifyPropertyChanged("SplitList");
 		}
 
 		/// <summary>
@@ -123,6 +143,7 @@ namespace Homunculus_ViewModel
 			// TODO: Placeholder data???
 			// TODO: Does the Model hold the instantiation as well as the schema???
 			splitList = new ObservableCollection<SplitVM>();
+#if false
 			splitList.Add(new SplitVM { SplitName = "Last Giant", CurrentValue = 0, DiffValue = 0, CurrentPbValue = 0 });
 			splitList.Add(new SplitVM { SplitName = "Pursuer", CurrentValue = 0, DiffValue = 0, CurrentPbValue = 0 });
 			splitList.Add(new SplitVM { SplitName = "Last Giant", CurrentValue = 0, DiffValue = 0, CurrentPbValue = 0 });
@@ -132,7 +153,7 @@ namespace Homunculus_ViewModel
 
 			// TODO: Placeholder data.
 			splitTextList = "This string should never be seen.";
-
+#endif
 			SuccessButtonText = "Success";
 		}
 
