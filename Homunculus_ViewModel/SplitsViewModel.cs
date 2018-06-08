@@ -101,13 +101,15 @@ namespace Homunculus_ViewModel
 			splitList = new ObservableCollection<SplitVM>();
 			foreach (string s in lines)
 			{
-				splitList.Add(new SplitVM
-				{
-					SplitName = s,
-					CurrentValue = 0,
-					DiffValue = 0,
-					CurrentPbValue = 0
-				});
+				// Only add non-empty strings
+				if (s.Trim() != "")
+					splitList.Add(new SplitVM
+					{
+						SplitName = s.Trim(),
+						CurrentValue = 0,
+						DiffValue = 0,
+						CurrentPbValue = 0
+					});
 			}
 
 			// For now, a new split list means starting over from the beginning.

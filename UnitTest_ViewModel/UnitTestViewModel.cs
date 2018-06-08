@@ -36,19 +36,37 @@ namespace UnitTest_ViewModel
 			string empty = "";
 			vm.SetSplits(empty);
 
-#if false
-			// I got this code from https://stackoverflow.com/questions/248989/unit-testing-that-an-event-is-raised-in-c-sharp#249042
-			System.Collections.Generic.List<string> receivedEvents = new System.Collections.Generic.List<string>();
-			vm.PropertyChanged += delegate (object sender, System.ComponentModel.PropertyChangedEventArgs e)
-			{
-				receivedEvents.Add(e.PropertyName);
-			};
-			Assert.AreEqual(1, receivedEvents.Count);
-			Assert.AreEqual("SplitList", receivedEvents[0]);
-#endif
-
 			Assert.AreEqual(0, vm.SplitList.Count);
 			Assert.AreEqual("", vm.SplitTextList);
+		}
+
+		[TestMethod]
+		public void SetSplits_Multiple()
+		{
+			string splits = "one\r\ntwo\r\nthree";
+			vm.SetSplits(splits);
+			Assert.AreEqual(3, vm.SplitList.Count);
+			Assert.AreEqual("one\r\ntwo\r\nthree\r\n", vm.SplitTextList);
+
+			splits = "";
+			vm.SetSplits(splits);
+			Assert.AreEqual(0, vm.SplitList.Count);
+			Assert.AreEqual("", vm.SplitTextList);
+
+			splits = "four\r\nfive\r\nthis is the sixth\r\nand seventh";
+			vm.SetSplits(splits);
+			Assert.AreEqual(4, vm.SplitList.Count);
+			Assert.AreEqual("four\r\nfive\r\nthis is the sixth\r\nand seventh\r\n", vm.SplitTextList);
+
+			splits = "dude\r\nclean\r\n\r\nthese splits\r\n \r\nup\r\n\r\n\r\n";
+			vm.SetSplits(splits);
+			Assert.AreEqual(4, vm.SplitList.Count);
+			Assert.AreEqual("dude\r\nclean\r\nthese splits\r\nup\r\n", vm.SplitTextList);
+
+			splits = "  leading whitespace\r\ntrailing whitespace   \r\n both at once  ";
+			vm.SetSplits(splits);
+			Assert.AreEqual(3, vm.SplitList.Count);
+			Assert.AreEqual("leading whitespace\r\ntrailing whitespace\r\nboth at once\r\n", vm.SplitTextList);
 		}
 
 		[TestMethod]
