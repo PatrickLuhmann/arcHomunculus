@@ -28,19 +28,6 @@ namespace UnitTest_ViewModel
 		}
 
 		[TestMethod]
-		public void SetSplits_NoSplits()
-		{
-			// It is okay to call SetSplits with an empty string. It is up to
-			// the "activate run" code to enforce the "must be at least one
-			// split" rule.
-			string empty = "";
-			vm.SetSplits(empty);
-
-			Assert.AreEqual(0, vm.SplitList.Count);
-			Assert.AreEqual("", vm.SplitTextList);
-		}
-
-		[TestMethod]
 		public void SetSplits_Multiple()
 		{
 			string splits = "one\r\ntwo\r\nthree";
@@ -67,6 +54,11 @@ namespace UnitTest_ViewModel
 			vm.SetSplits(splits);
 			Assert.AreEqual(3, vm.SplitList.Count);
 			Assert.AreEqual("leading whitespace\r\ntrailing whitespace\r\nboth at once\r\n", vm.SplitTextList);
+
+			splits = "\t  what\r\nabout\t\r\n \t tabs? \t \t  ";
+			vm.SetSplits(splits);
+			Assert.AreEqual(3, vm.SplitList.Count);
+			Assert.AreEqual("what\r\nabout\r\ntabs?\r\n", vm.SplitTextList);
 		}
 
 		[TestMethod]
