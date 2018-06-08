@@ -80,10 +80,31 @@ namespace UnitTest_ViewModel
 		}
 
 		[TestMethod]
-		public void FailureProc_FirstSplitOfSeveral()
+		public void MixedSuccessAndFailureOnSplits()
 		{
 			// Create several splits.
+			string splits = "one\r\ntwo\r\nthree";
+			vm.SetSplits(splits);
 
+			// Hit the first split with a couple of failures.
+			vm.FailureProc();
+			vm.FailureProc();
+			Assert.AreEqual(2, vm.SplitList[0].CurrentValue);
+			Assert.AreEqual(0, vm.SplitList[1].CurrentValue);
+			Assert.AreEqual(0, vm.SplitList[2].CurrentValue);
+
+			// Succeed the second split.
+			vm.SuccessProc();
+			vm.SuccessProc();
+			Assert.AreEqual(2, vm.SplitList[0].CurrentValue);
+			Assert.AreEqual(0, vm.SplitList[1].CurrentValue);
+			Assert.AreEqual(0, vm.SplitList[2].CurrentValue);
+
+			// Fail the third split once.
+			vm.FailureProc();
+			Assert.AreEqual(2, vm.SplitList[0].CurrentValue);
+			Assert.AreEqual(0, vm.SplitList[1].CurrentValue);
+			Assert.AreEqual(1, vm.SplitList[2].CurrentValue);
 		}
 	}
 }
