@@ -150,6 +150,7 @@ namespace Homunculus_ViewModel
 		{
 			Model Challenges = new Model();
 
+			// Get the splits.
 			// TODO: Placeholder data???
 			// TODO: Does the Model hold the instantiation as well as the schema???
 			splitList = new ObservableCollection<SplitVM>();
