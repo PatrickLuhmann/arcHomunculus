@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Homunculus_Model;
 
 namespace Homunculus_ViewModel
 {
@@ -127,6 +128,11 @@ namespace Homunculus_ViewModel
 			NotifyPropertyChanged("SplitList");
 		}
 
+		public void CreateChallenge(string name, string splits)
+		{
+			// 
+		}
+
 		/// <summary>
 		/// NOTE: This might be deprecated, or at least delayed.
 		/// </summary>
@@ -142,6 +148,8 @@ namespace Homunculus_ViewModel
 
 		public SplitsViewModel()
 		{
+			Model Challenges = new Model();
+
 			// TODO: Placeholder data???
 			// TODO: Does the Model hold the instantiation as well as the schema???
 			splitList = new ObservableCollection<SplitVM>();
