@@ -17,6 +17,7 @@ namespace Homunculus_Model
 		{
 			System.Diagnostics.Debug.WriteLine("Enter Model constructor");
 
+#if false
 			// Load the data file. If it doesn't exist, create it.
 			FileName = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\homunculus.xml";
 
@@ -27,8 +28,40 @@ namespace Homunculus_Model
 				System.Diagnostics.Debug.WriteLine("Model: data file loaded - " + FileName);
 			}
 			else
+#endif
 			{
 				ChallengeRuns = new DataSet("Homunculus");
+
+				// TABLE: Challenges
+				DataTable challenges = ChallengeRuns.Tables.Add("Challenges");
+				challenges.Columns.Add("ID", typeof(UInt32));
+				challenges.PrimaryKey = new DataColumn[] { challenges.Columns["ID"] };
+				challenges.Columns["ID"].AutoIncrement = true;
+				challenges.Columns["ID"].AutoIncrementSeed = 1;
+				challenges.Columns["ID"].AutoIncrementStep = 1;
+				challenges.Columns.Add("Name", typeof(string));
+
+				// TABLE: Splits
+				DataTable splits = ChallengeRuns.Tables.Add("Splits");
+				splits.Columns.Add("ID", typeof(UInt32));
+				splits.PrimaryKey = new DataColumn[] { splits.Columns["ID"] };
+				splits.Columns["ID"].AutoIncrement = true;
+				splits.Columns["ID"].AutoIncrementSeed = 1;
+				splits.Columns["ID"].AutoIncrementStep = 1;
+				splits.Columns.Add("Name", typeof(string));
+				splits.Columns.Add("ChallengeID", typeof(UInt32));
+				splits.Columns.Add("IndexWithinChallenge", typeof(UInt32));
+
+				// TABLE: Runs
+				DataTable runs = ChallengeRuns.Tables.Add("Runs");
+				runs.Columns.Add("ID", typeof(UInt32));
+				runs.PrimaryKey = new DataColumn[] { runs.Columns["ID"] };
+				runs.Columns["ID"].AutoIncrement = true;
+				runs.Columns["ID"].AutoIncrementSeed = 1;
+				runs.Columns["ID"].AutoIncrementStep = 1;
+				runs.Columns.Add("Name", typeof(string));
+				runs.Columns.Add("ChallengeID", typeof(UInt32));
+				runs.Columns.Add("IndexWithinChallenge", typeof(UInt32));
 
 				// TABLE: ConfigParams
 				DataTable configParameters = ChallengeRuns.Tables.Add("ConfigParams");
@@ -47,18 +80,8 @@ namespace Homunculus_Model
 				row["Value"] = "1";
 				configParameters.Rows.Add(row);
 
-				ChallengeRuns.WriteXml(FileName, XmlWriteMode.WriteSchema);
-
-				System.Diagnostics.Debug.WriteLine("Model: data file created - " + FileName);
-			}
-		}
-
-		public int NumChallenges
-		{
-			get
-			{
-				// There is 1 non-challenge table in the set.
-				return ChallengeRuns.Tables.Count - 1;
+				//ChallengeRuns.WriteXml(FileName, XmlWriteMode.WriteSchema);
+				//System.Diagnostics.Debug.WriteLine("Model: data file created - " + FileName);
 			}
 		}
 
@@ -68,51 +91,43 @@ namespace Homunculus_Model
 		public bool Create() { return false; }
 
 		// Create a new challenge
-		public void CreateChallenge(string ChallengeName, List<string> Splits)
+		public List<Split> CreateChallenge(string ChallengeName, List<Split> Splits)
 		{
-			// Create a new DataTable.
-			DataTable Challenge = new DataTable(ChallengeName);
+			// Create a new entry in the Challenges table for the challenge.
+			DataTable Challenges = ChallengeRuns.Tables["Challenges"];
+			DataRow row = Challenges.NewRow();
+			row["Name"] = ChallengeName;
+			UInt32 challengeID = Convert.ToUInt32( row["ID"].ToString() );
+			Challenges.Rows.Add(row);
 
-			// Create the split columns.
-			foreach (string Name in Splits)
+			// Create the split entries in the Splits table.
+			DataTable dt = ChallengeRuns.Tables["Splits"];
+			DataRow dr;
+			for (int i = 0; i < Splits.Count; i++)
 			{
-				DataColumn Col = new DataColumn(Name);
-				Challenge.Columns.Add(Col);
+				dr = dt.NewRow();
+				dr["Name"] = Splits[i].Name;
+				dr["ChallengeID"] = challengeID;
+				dr["IndexWithinChallenge"] = i;
+				dt.Rows.Add(dr);
+				Splits[i].Handle = Convert.ToUInt32(dr["ID"] );
 			}
 
-			// Create the bookkeeping columns.
-			Challenge.Columns.Add("ID", typeof(UInt32));
-			Challenge.PrimaryKey = new DataColumn[] { Challenge.Columns["ID"] };
-			Challenge.Columns["ID"].AutoIncrement = true;
-			Challenge.Columns["ID"].AutoIncrementSeed = 1;
-			Challenge.Columns["ID"].AutoIncrementStep = 1;
-
-			// The current split (0-based). -1 means the split has not
-			// started. When the run is completed, this will be set to
-			// the number of splits (i.e. one past the last split due
-			// to 0-based counting).
-			Challenge.Columns.Add("State", typeof(int));
-			Challenge.Columns["State"].DefaultValue = -1;
-
-			// Only one run can be true; the rest must be false.
-			Challenge.Columns.Add("PB", typeof(bool));
-			Challenge.Columns["PB"].DefaultValue = false;
-
-			ChallengeRuns.Tables.Add(Challenge);
-
 			// TODO: Save db here?
+
+			return Splits;
 		}
 
-		public List<string> GetSplits(string ChallengeName)
+		public List<Split> GetSplits(string ChallengeName)
 		{
 			DataTable Challenge = ChallengeRuns.Tables[ChallengeName];
 			if (Challenge == null)
 				return null;
 
-			List<string> Splits = new List<string>();
+			List<Split> Splits = new List<Split>();
 			foreach (DataColumn Col in Challenge.Columns)
 			{
-				Splits.Add(Col.ColumnName);
+				Splits.Add(new Split { Name = Col.ColumnName, Handle = 0 });
 			}
 
 			return Splits;
@@ -155,5 +170,11 @@ namespace Homunculus_Model
 		public List<string> Splits;
 		public List<int> Counts;
 		public int CurrSplit;
+	}
+
+	public class Split
+	{
+		public UInt32 Handle = 0;
+		public string Name;
 	}
 }

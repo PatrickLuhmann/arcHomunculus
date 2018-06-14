@@ -17,26 +17,30 @@ namespace UnitTest_Homunculus_Model
 		}
 
 		[TestMethod]
-		public void CreateChallenge_GetSplits()
+		public void CreateChallenge_Basic()
 		{
 			// Create a new challenge.
-			List<string> NamesBefore = new List<string>();
-			NamesBefore.Add("one");
-			NamesBefore.Add("two");
-			NamesBefore.Add("three");
-			NamesBefore.Add("four");
-			TestModel.CreateChallenge("new challenge", NamesBefore);
+			List<Split> SplitsBefore = new List<Split>();
+			SplitsBefore.Add(new Split { Name = "one" });
+			SplitsBefore.Add(new Split { Name = "two" });
+			SplitsBefore.Add(new Split { Name = "three" });
+			SplitsBefore.Add(new Split { Name = "four" });
+			List<Split> SplitsAfter = TestModel.CreateChallenge("new challenge", SplitsBefore);
 
-			// Verify
-			Assert.AreEqual(1, TestModel.NumChallenges);
-			List<string> NamesAfter = TestModel.GetSplits("new challenge");
-			Assert.AreEqual("one", NamesAfter[0]);
-			Assert.AreEqual("two", NamesAfter[1]);
-			Assert.AreEqual("three", NamesAfter[2]);
-			Assert.AreEqual("four", NamesAfter[3]);
+			// Verify split names.
+			Assert.AreEqual("one", SplitsAfter[0].Name);
+			Assert.AreEqual("two", SplitsAfter[1].Name);
+			Assert.AreEqual("three", SplitsAfter[2].Name);
+			Assert.AreEqual("four", SplitsAfter[3].Name);
 
-			// Create a new run and go through the splits.
-			Run CurrRun = TestModel.NewRun("new challenge");
+			// We don't know the implementation details, except that
+			// Handle must be unique between different Splits.
+			Assert.AreNotEqual(SplitsAfter[0].Handle, SplitsAfter[1].Handle);
+			Assert.AreNotEqual(SplitsAfter[0].Handle, SplitsAfter[2].Handle);
+			Assert.AreNotEqual(SplitsAfter[0].Handle, SplitsAfter[3].Handle);
+			Assert.AreNotEqual(SplitsAfter[1].Handle, SplitsAfter[2].Handle);
+			Assert.AreNotEqual(SplitsAfter[1].Handle, SplitsAfter[3].Handle);
+			Assert.AreNotEqual(SplitsAfter[2].Handle, SplitsAfter[3].Handle);
 		}
 	}
 }
