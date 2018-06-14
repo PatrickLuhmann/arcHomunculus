@@ -90,9 +90,21 @@ namespace Homunculus_Model
 		public bool Save() { return false; }
 		public bool Create() { return false; }
 
-		// Create a new challenge
+		/// <summary>
+		/// Create a new challenge in the database.
+		/// </summary>
+		/// <param name="ChallengeName">The name of the challenge (must be unique).</param>
+		/// <param name="Splits">Ordered list of the splits for the challenge (must not be null or empty).</param>
+		/// <returns>Ordered list of the splits, with Handle filled in for future use.</returns>
 		public List<Split> CreateChallenge(string ChallengeName, List<Split> Splits)
 		{
+			// Check for bad parameters.
+			if (Splits == null)
+				throw new ArgumentNullException();
+
+			if (Splits.Count == 0)
+				throw new ArgumentException();
+
 			// Create a new entry in the Challenges table for the challenge.
 			DataTable Challenges = ChallengeRuns.Tables["Challenges"];
 			DataRow row = Challenges.NewRow();
@@ -118,19 +130,46 @@ namespace Homunculus_Model
 			return Splits;
 		}
 
+		/// <summary>
+		/// Get a list of the challenges in the database.
+		/// </summary>
+		/// <returns>List of the challenge names (no particular order).</returns>
+		public List<string> GetChallenges()
+		{
+			List<string> challenges = new List<string>();
+			foreach (DataRow row in ChallengeRuns.Tables["Challenges"].Rows)
+			{
+				challenges.Add(row["Name"].ToString());
+			}
+			return challenges;
+		}
+
+		/// <summary>
+		/// Get an ordered list of the splits in the given challenge.
+		/// </summary>
+		/// <param name="ChallengeName">Name of the challenge.</param>
+		/// <returns>Ordered list of the splits in the given challenge.</returns>
 		public List<Split> GetSplits(string ChallengeName)
 		{
-			DataTable Challenge = ChallengeRuns.Tables[ChallengeName];
-			if (Challenge == null)
-				return null;
+			// Get the Challenge ID.
+			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
+				                        .Select("Name = '" + ChallengeName + "'");
 
-			List<Split> Splits = new List<Split>();
-			foreach (DataColumn Col in Challenge.Columns)
+			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
+
+			// Get the splits that go with this challenge.
+			dr = ChallengeRuns.Tables["Splits"]
+				              .Select("ChallengeID = " + challengeID.ToString(),
+				                      "IndexWithinChallenge ASC");
+
+			List<Split> splits = new List<Split>();
+			foreach (var r in dr)
 			{
-				Splits.Add(new Split { Name = Col.ColumnName, Handle = 0 });
+				splits.Add(new Split { Name = r["Name"].ToString(),
+					Handle = Convert.ToUInt32(r["ID"]) });
 			}
 
-			return Splits;
+			return splits;
 		}
 
 		// Provides the splits from the Personal Best run
