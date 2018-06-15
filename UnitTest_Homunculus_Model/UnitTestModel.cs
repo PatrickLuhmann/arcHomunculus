@@ -132,5 +132,49 @@ namespace UnitTest_Homunculus_Model
 			Assert.AreNotEqual(SplitsAfter[2].Handle, SplitsAfter[4].Handle);
 			Assert.AreNotEqual(SplitsAfter[3].Handle, SplitsAfter[4].Handle);
 		}
+
+		[TestMethod]
+		public void CreateNewRun_Basic()
+		{
+			// Create a new challenge.
+			List<Split> SplitsBefore = new List<Split>();
+			SplitsBefore.Add(new Split { Name = "one" });
+			SplitsBefore.Add(new Split { Name = "two" });
+			SplitsBefore.Add(new Split { Name = "three" });
+			SplitsBefore.Add(new Split { Name = "four" });
+			List<Split> SplitsAfter = TestModel.CreateChallenge("new challenge", SplitsBefore);
+
+			// Create a new run.
+			List<int> RunValues = TestModel.CreateNewRun("new challenge");
+			Assert.AreEqual(4, RunValues.Count);
+			Assert.AreEqual(-1, RunValues[0]);
+			Assert.AreEqual(-1, RunValues[1]);
+			Assert.AreEqual(-1, RunValues[2]);
+			Assert.AreEqual(-1, RunValues[3]);
+		}
+
+		[TestMethod]
+		public void GetRuns_Basic()
+		{
+			// Create a new challenge.
+			List<Split> SplitsBefore = new List<Split>();
+			SplitsBefore.Add(new Split { Name = "one" });
+			SplitsBefore.Add(new Split { Name = "two" });
+			SplitsBefore.Add(new Split { Name = "three" });
+			SplitsBefore.Add(new Split { Name = "four" });
+			List<Split> SplitsAfter = TestModel.CreateChallenge("new challenge", SplitsBefore);
+
+			// Create a new run.
+			List<int> RunValues = TestModel.CreateNewRun("new challenge");
+
+			// Get the info on the runs for the challenge.
+			List<List<int>> runs = TestModel.GetRuns("new challenge");
+			Assert.AreEqual(1, runs.Count);
+			Assert.AreEqual(4, runs[0].Count);
+			Assert.AreEqual(-1, runs[0][0]);
+			Assert.AreEqual(-1, runs[0][1]);
+			Assert.AreEqual(-1, runs[0][2]);
+			Assert.AreEqual(-1, runs[0][3]);
+		}
 	}
 }

@@ -40,6 +40,7 @@ namespace Homunculus_Model
 				challenges.Columns["ID"].AutoIncrementSeed = 1;
 				challenges.Columns["ID"].AutoIncrementStep = 1;
 				challenges.Columns.Add("Name", typeof(string));
+				challenges.Columns.Add("NumberOfRuns", typeof(UInt32));
 
 				// TABLE: Splits
 				DataTable splits = ChallengeRuns.Tables.Add("Splits");
@@ -59,9 +60,21 @@ namespace Homunculus_Model
 				runs.Columns["ID"].AutoIncrement = true;
 				runs.Columns["ID"].AutoIncrementSeed = 1;
 				runs.Columns["ID"].AutoIncrementStep = 1;
-				runs.Columns.Add("Name", typeof(string));
 				runs.Columns.Add("ChallengeID", typeof(UInt32));
-				runs.Columns.Add("IndexWithinChallenge", typeof(UInt32));
+				runs.Columns.Add("RunNumber", typeof(UInt32));
+				runs.Columns.Add("Closed", typeof(bool)); // ???
+				runs.Columns.Add("PB", typeof(bool)); // ???
+
+				// TABLE: Counts
+				DataTable counts = ChallengeRuns.Tables.Add("Counts");
+				counts.Columns.Add("ID", typeof(UInt32));
+				counts.PrimaryKey = new DataColumn[] { counts.Columns["ID"] };
+				counts.Columns["ID"].AutoIncrement = true;
+				counts.Columns["ID"].AutoIncrementSeed = 1;
+				counts.Columns["ID"].AutoIncrementStep = 1;
+				counts.Columns.Add("RunID", typeof(UInt32));
+				counts.Columns.Add("SplitID", typeof(UInt32));
+				counts.Columns.Add("Value", typeof(Int32));
 
 				// TABLE: ConfigParams
 				DataTable configParameters = ChallengeRuns.Tables.Add("ConfigParams");
@@ -109,7 +122,8 @@ namespace Homunculus_Model
 			DataTable Challenges = ChallengeRuns.Tables["Challenges"];
 			DataRow row = Challenges.NewRow();
 			row["Name"] = ChallengeName;
-			UInt32 challengeID = Convert.ToUInt32( row["ID"].ToString() );
+			row["NumberOfRuns"] = 0;
+			UInt32 challengeID = Convert.ToUInt32(row["ID"].ToString());
 			Challenges.Rows.Add(row);
 
 			// Create the split entries in the Splits table.
@@ -122,7 +136,7 @@ namespace Homunculus_Model
 				dr["ChallengeID"] = challengeID;
 				dr["IndexWithinChallenge"] = i;
 				dt.Rows.Add(dr);
-				Splits[i].Handle = Convert.ToUInt32(dr["ID"] );
+				Splits[i].Handle = Convert.ToUInt32(dr["ID"]);
 			}
 
 			// TODO: Save db here?
@@ -153,50 +167,126 @@ namespace Homunculus_Model
 		{
 			// Get the Challenge ID.
 			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
-				                        .Select("Name = '" + ChallengeName + "'");
+										.Select("Name = '" + ChallengeName + "'");
 
 			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
 
 			// Get the splits that go with this challenge.
 			dr = ChallengeRuns.Tables["Splits"]
-				              .Select("ChallengeID = " + challengeID.ToString(),
-				                      "IndexWithinChallenge ASC");
+							  .Select("ChallengeID = " + challengeID.ToString(),
+									  "IndexWithinChallenge ASC");
 
 			List<Split> splits = new List<Split>();
 			foreach (var r in dr)
 			{
-				splits.Add(new Split { Name = r["Name"].ToString(),
-					Handle = Convert.ToUInt32(r["ID"]) });
+				splits.Add(new Split
+				{
+					Name = r["Name"].ToString(),
+					Handle = Convert.ToUInt32(r["ID"])
+				});
 			}
 
 			return splits;
 		}
 
-		// Provides the splits from the Personal Best run
-		public List<RunInfo> GetPBRun(string ChallengeName)
+		public List<int> CreateNewRun(string ChallengeName)
 		{
-			return null;
+			// Get the Challenge ID.
+			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
+										.Select("Name = '" + ChallengeName + "'");
+			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
+
+			// Increment the Run Number for this challenge.
+			UInt32 challengeRunNumber = Convert.ToUInt32(dr[0]["NumberOfRuns"]);
+			challengeRunNumber++;
+			dr[0]["NumberOfRuns"] = challengeRunNumber;
+			// TODO: Do I need to explicitly send this back to the table?
+
+			// Create a new Run for this Challenge.
+			DataRow runRow = ChallengeRuns.Tables["Runs"].NewRow();
+			runRow["ChallengeID"] = challengeID;
+			runRow["RunNumber"] = challengeRunNumber;
+			UInt32 runId = Convert.ToUInt32(runRow["ID"].ToString());
+			ChallengeRuns.Tables["Runs"].Rows.Add(runRow);
+
+			// Create the Counts for this new Run.
+
+			// Get the splits that go with this challenge.
+			dr = ChallengeRuns.Tables["Splits"]
+							  .Select("ChallengeID = " + challengeID.ToString(),
+									  "IndexWithinChallenge ASC");
+
+			// For each split, create a row in the Counts table.
+			// Also add to the list that will be returned to the caller.
+			List<int> counts = new List<int>();
+			foreach (var sr in dr)
+			{
+				// Create the new count row.
+				DataRow countRow = ChallengeRuns.Tables["Counts"].NewRow();
+
+				// Set the SplitID.
+				UInt32 splitId = Convert.ToUInt32(sr["ID"]);
+				countRow["SplitID"] = splitId;
+
+				// Set the RunID.
+				countRow["RunID"] = runId;
+
+				// Set the Value.
+				countRow["Value"] = -1;
+
+				// Put the row into the table.
+				ChallengeRuns.Tables["Counts"].Rows.Add(countRow);
+
+				counts.Add(-1);
+			}
+
+			return counts;
 		}
 
-		public Run NewRun(string ChallengeName)
+		public List<List<int>> GetRuns(string ChallengeName)
 		{
-			DataTable Challenge = ChallengeRuns.Tables[ChallengeName];
-			DataRow Row = Challenge.NewRow();
-			Challenge.Rows.Add(Row);
+			// Get the Challenge ID.
+			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
+										.Select("Name = '" + ChallengeName + "'");
+			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
 
-			Run NewRun = new Run();
-			NewRun.Handle = (int)Row["ID"];
-			NewRun.CurrSplit = 0;
-			// TODO: This seems very hacky.
-			for (int i = 0; i < Challenge.Columns.Count - 3; i++)
+			// Get the splits that go with this challenge.
+			DataRow[] rowSplits = ChallengeRuns.Tables["Splits"]
+				.Select("ChallengeID = " + challengeID.ToString(),
+				"IndexWithinChallenge ASC");
+
+			// Get the runs that go with this challenge.
+			DataRow[] rowRuns = ChallengeRuns.Tables["Runs"]
+				.Select("ChallengeID = " + challengeID.ToString(),
+				"RunNumber ASC");
+
+			List<List<int>> runs = new List<List<int>>();
+			foreach (var rr in rowRuns)
 			{
-				NewRun.Splits[i] = Challenge.Columns[i].ColumnName;
-				NewRun.Counts[i] = 0;
+				// Need a new list for each Run.
+				List<int> runCounts = new List<int>();
+
+				// Get the ID of this run.
+				UInt32 runId = Convert.ToUInt32(rr["ID"]);
+
+				// The splits need to be ordered for this to work.
+				foreach (var sr in rowSplits)
+				{
+					UInt32 splitId = Convert.ToUInt32(sr["ID"]);
+					DataRow[] count = ChallengeRuns.Tables["Counts"]
+						.Select("RunID = " + runId + " AND SplitID = " + splitId);
+
+					runCounts.Add(Convert.ToInt32(count[0]["Value"]));
+				}
+
+				// Add the newly-created list of split values to the main list.
+				runs.Add(runCounts);
 			}
-			return NewRun;
+			return runs;
 		}
 	}
 
+#if false
 	public class RunInfo
 	{
 		public string SplitName;
@@ -210,7 +300,7 @@ namespace Homunculus_Model
 		public List<int> Counts;
 		public int CurrSplit;
 	}
-
+#endif
 	public class Split
 	{
 		public UInt32 Handle = 0;
