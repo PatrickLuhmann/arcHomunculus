@@ -11,7 +11,7 @@ namespace Homunculus_Model
 	{
 		// All data is stored in a single DataSet.
 		private DataSet ChallengeRuns;
-		private string FileName;
+		//private string FileName;
 
 		public Model()
 		{
@@ -40,7 +40,6 @@ namespace Homunculus_Model
 				challenges.Columns["ID"].AutoIncrementSeed = 1;
 				challenges.Columns["ID"].AutoIncrementStep = 1;
 				challenges.Columns.Add("Name", typeof(string));
-				challenges.Columns.Add("NumberOfRuns", typeof(UInt32));
 
 				// TABLE: Splits
 				DataTable splits = ChallengeRuns.Tables.Add("Splits");
@@ -61,9 +60,10 @@ namespace Homunculus_Model
 				runs.Columns["ID"].AutoIncrementSeed = 1;
 				runs.Columns["ID"].AutoIncrementStep = 1;
 				runs.Columns.Add("ChallengeID", typeof(UInt32));
-				runs.Columns.Add("RunNumber", typeof(UInt32));
-				runs.Columns.Add("Closed", typeof(bool)); // ???
-				runs.Columns.Add("PB", typeof(bool)); // ???
+				runs.Columns.Add("Closed", typeof(bool));
+				runs.Columns["Closed"].DefaultValue = false;
+				runs.Columns.Add("PB", typeof(bool));
+				runs.Columns["PB"].DefaultValue = false;
 
 				// TABLE: Counts
 				DataTable counts = ChallengeRuns.Tables.Add("Counts");
@@ -112,7 +112,7 @@ namespace Homunculus_Model
 		public List<Split> CreateChallenge(string ChallengeName, List<Split> Splits)
 		{
 			// Check for bad parameters.
-			if (Splits == null)
+			if (ChallengeName == null || Splits == null)
 				throw new ArgumentNullException();
 
 			if (Splits.Count == 0)
@@ -122,7 +122,6 @@ namespace Homunculus_Model
 			DataTable Challenges = ChallengeRuns.Tables["Challenges"];
 			DataRow row = Challenges.NewRow();
 			row["Name"] = ChallengeName;
-			row["NumberOfRuns"] = 0;
 			UInt32 challengeID = Convert.ToUInt32(row["ID"].ToString());
 			Challenges.Rows.Add(row);
 
@@ -189,23 +188,29 @@ namespace Homunculus_Model
 			return splits;
 		}
 
-		public List<int> CreateNewRun(string ChallengeName)
+		public void StartNewRun(string ChallengeName)
 		{
+			if (ChallengeName == null)
+				throw new ArgumentNullException();
+
 			// Get the Challenge ID.
 			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
 										.Select("Name = '" + ChallengeName + "'");
 			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
 
-			// Increment the Run Number for this challenge.
-			UInt32 challengeRunNumber = Convert.ToUInt32(dr[0]["NumberOfRuns"]);
-			challengeRunNumber++;
-			dr[0]["NumberOfRuns"] = challengeRunNumber;
-			// TODO: Do I need to explicitly send this back to the table?
+			// Make sure there isn't already an active run for this challenge.
+			DataRow[] runRows = ChallengeRuns.Tables["Runs"]
+				.Select("ChallengeID = " + challengeID.ToString(),
+				"ID DESC");
+			if (runRows.Length != 0)
+			{
+				if (Convert.ToBoolean(runRows[0]["Closed"]) == false)
+					throw new InvalidOperationException();
+			}
 
 			// Create a new Run for this Challenge.
 			DataRow runRow = ChallengeRuns.Tables["Runs"].NewRow();
 			runRow["ChallengeID"] = challengeID;
-			runRow["RunNumber"] = challengeRunNumber;
 			UInt32 runId = Convert.ToUInt32(runRow["ID"].ToString());
 			ChallengeRuns.Tables["Runs"].Rows.Add(runRow);
 
@@ -217,8 +222,6 @@ namespace Homunculus_Model
 									  "IndexWithinChallenge ASC");
 
 			// For each split, create a row in the Counts table.
-			// Also add to the list that will be returned to the caller.
-			List<int> counts = new List<int>();
 			foreach (var sr in dr)
 			{
 				// Create the new count row.
@@ -236,11 +239,7 @@ namespace Homunculus_Model
 
 				// Put the row into the table.
 				ChallengeRuns.Tables["Counts"].Rows.Add(countRow);
-
-				counts.Add(-1);
 			}
-
-			return counts;
 		}
 
 		public List<List<int>> GetRuns(string ChallengeName)
@@ -258,7 +257,7 @@ namespace Homunculus_Model
 			// Get the runs that go with this challenge.
 			DataRow[] rowRuns = ChallengeRuns.Tables["Runs"]
 				.Select("ChallengeID = " + challengeID.ToString(),
-				"RunNumber ASC");
+				"ID ASC");
 
 			List<List<int>> runs = new List<List<int>>();
 			foreach (var rr in rowRuns)
@@ -286,21 +285,6 @@ namespace Homunculus_Model
 		}
 	}
 
-#if false
-	public class RunInfo
-	{
-		public string SplitName;
-		public int HitCount;
-	}
-
-	public class Run
-	{
-		public int Handle; // opaque handle to the user
-		public List<string> Splits;
-		public List<int> Counts;
-		public int CurrSplit;
-	}
-#endif
 	public class Split
 	{
 		public UInt32 Handle = 0;
