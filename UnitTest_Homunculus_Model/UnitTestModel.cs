@@ -371,7 +371,6 @@ namespace UnitTest_Homunculus_Model
 
 		[TestMethod]
 		[ExpectedException(typeof(System.InvalidOperationException))]
-		[Ignore] // Ignore until EndRun() is implemented.
 		public void UpdateRun_RunNotActive()
 		{
 			string challengeName = "new challenge";
@@ -398,10 +397,90 @@ namespace UnitTest_Homunculus_Model
 			TestModel.UpdateRun(challengeName, splitValues);
 
 			// End the run.
-//			TestModel.EndRun(challengeName);
+			TestModel.EndRun(challengeName);
 
 			// Now try to update the same run again.
 			TestModel.UpdateRun(challengeName, splitValues);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(ArgumentNullException))]
+		public void EndRun_NullChallengeName()
+		{
+			string challengeName = "new challenge";
+
+			// Create a new challenge.
+			List<Split> SplitsBefore = new List<Split>();
+			SplitsBefore.Add(new Split { Name = "one" });
+			SplitsBefore.Add(new Split { Name = "two" });
+			SplitsBefore.Add(new Split { Name = "three" });
+			SplitsBefore.Add(new Split { Name = "four" });
+			List<Split> SplitsAfter = TestModel.CreateChallenge(challengeName, SplitsBefore);
+
+			// Start a new run.
+			TestModel.StartNewRun(challengeName);
+
+			// Create a list of ints for the split values.
+			List<int> splitValues = new List<int>();
+			for (int i = 0; i < SplitsAfter.Count; i++)
+			{
+				splitValues.Add(i);
+			}
+
+			// Update the run.
+			TestModel.UpdateRun(null, splitValues);
+
+			// End the run.
+			TestModel.EndRun(null);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.IndexOutOfRangeException))]
+		public void EndRun_UnknownChallengeName()
+		{
+			string challengeName = "new challenge";
+
+			// Create a new challenge.
+			List<Split> SplitsBefore = new List<Split>();
+			SplitsBefore.Add(new Split { Name = "one" });
+			SplitsBefore.Add(new Split { Name = "two" });
+			SplitsBefore.Add(new Split { Name = "three" });
+			SplitsBefore.Add(new Split { Name = "four" });
+			List<Split> SplitsAfter = TestModel.CreateChallenge(challengeName, SplitsBefore);
+
+			// Start a new run.
+			TestModel.StartNewRun(challengeName);
+
+			// Create a list of ints for the split values.
+			List<int> splitValues = new List<int>();
+			for (int i = 0; i < SplitsAfter.Count; i++)
+			{
+				splitValues.Add(i);
+			}
+
+			// Update the run.
+			TestModel.UpdateRun(challengeName, splitValues);
+
+			// End the run.
+			TestModel.EndRun("unknown challenge name");
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.InvalidOperationException))]
+		public void EndRun_RunNotActive()
+		{
+			string challengeName = "new challenge";
+
+			// Create a new challenge.
+			List<Split> SplitsBefore = new List<Split>();
+			SplitsBefore.Add(new Split { Name = "one" });
+			SplitsBefore.Add(new Split { Name = "two" });
+			SplitsBefore.Add(new Split { Name = "three" });
+			SplitsBefore.Add(new Split { Name = "four" });
+			List<Split> SplitsAfter = TestModel.CreateChallenge(challengeName, SplitsBefore);
+
+			// End the run.
+			TestModel.EndRun(challengeName);
 		}
 
 		[TestMethod]

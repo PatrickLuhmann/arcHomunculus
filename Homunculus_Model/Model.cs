@@ -253,6 +253,14 @@ namespace Homunculus_Model
 										.Select("Name = '" + ChallengeName + "'");
 			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
 
+			// Get the active run for this challenge.
+			DataRow[] rowRuns = ChallengeRuns.Tables["Runs"]
+				.Select("ChallengeID = " + challengeID.ToString(),
+				"ID DESC");
+			if (Convert.ToBoolean(rowRuns[0]["Closed"]) == true)
+				throw new InvalidOperationException();
+			UInt32 runID = Convert.ToUInt32(rowRuns[0]["ID"]);
+
 			// Get the splits that go with this challenge.
 			// Make sure they are in the correct order.
 			DataRow[] rowSplits = ChallengeRuns.Tables["Splits"]
@@ -262,18 +270,36 @@ namespace Homunculus_Model
 			if (rowSplits.Length != SplitValues.Count)
 				throw new ArgumentException();
 
-			// Get the active run for this challenge.
-			DataRow[] rowRuns = ChallengeRuns.Tables["Runs"]
-				.Select("ChallengeID = " + challengeID.ToString(),
-				"ID DESC");
-			UInt32 runID = Convert.ToUInt32(rowRuns[0]["ID"]);
-
 			for (int i = 0; i < rowSplits.Length; i++)
 			{
 				DataRow[] rowCounts = ChallengeRuns.Tables["Counts"]
 					.Select("RunID = " + runID.ToString() + " AND SplitID = " + rowSplits[i]["ID"].ToString());
 				rowCounts[0]["Value"] = SplitValues[i];
 			}
+		}
+
+		public void EndRun(string ChallengeName)
+		{
+			if (ChallengeName == null)
+				throw new ArgumentNullException();
+
+			// Get the Challenge ID.
+			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
+										.Select("Name = '" + ChallengeName + "'");
+			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
+
+			// Make sure there is an active run for this challenge.
+			DataRow[] runRows = ChallengeRuns.Tables["Runs"]
+				.Select("ChallengeID = " + challengeID.ToString(),
+				"ID DESC");
+			if ((runRows.Length == 0) ||
+				(Convert.ToBoolean(runRows[0]["Closed"]) == true))
+				throw new InvalidOperationException();
+
+			// Close the run.
+			runRows[0]["Closed"] = true;
+
+			// Check to see if this run is a new PB.
 		}
 
 		public List<List<int>> GetRuns(string ChallengeName)
