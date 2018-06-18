@@ -484,6 +484,42 @@ namespace UnitTest_Homunculus_Model
 		}
 
 		[TestMethod]
+		[ExpectedException(typeof(System.IndexOutOfRangeException))]
+		public void GetRuns_UnknownChallengeName()
+		{
+			string challengeName = "new challenge";
+
+			// Create a new challenge.
+			List<Split> SplitsBefore = new List<Split>();
+			SplitsBefore.Add(new Split { Name = "one" });
+			SplitsBefore.Add(new Split { Name = "two" });
+			SplitsBefore.Add(new Split { Name = "three" });
+			SplitsBefore.Add(new Split { Name = "four" });
+			List<Split> SplitsAfter = TestModel.CreateChallenge(challengeName, SplitsBefore);
+
+			// Get the info on the runs for the challenge.
+			List<List<int>> runs = TestModel.GetRuns("unknown challenge name");
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.ArgumentNullException))]
+		public void GetRuns_NullChallengeName()
+		{
+			string challengeName = "new challenge";
+
+			// Create a new challenge.
+			List<Split> SplitsBefore = new List<Split>();
+			SplitsBefore.Add(new Split { Name = "one" });
+			SplitsBefore.Add(new Split { Name = "two" });
+			SplitsBefore.Add(new Split { Name = "three" });
+			SplitsBefore.Add(new Split { Name = "four" });
+			List<Split> SplitsAfter = TestModel.CreateChallenge(challengeName, SplitsBefore);
+
+			// Get the info on the runs for the challenge.
+			List<List<int>> runs = TestModel.GetRuns(null);
+		}
+
+		[TestMethod]
 		public void GetRuns_NoRuns()
 		{
 			string challengeName = "new challenge";
@@ -501,6 +537,64 @@ namespace UnitTest_Homunculus_Model
 			// Get the info on the runs for the challenge.
 			List<List<int>> runs = TestModel.GetRuns(challengeName);
 			Assert.AreEqual(0, runs.Count);
+		}
+
+		[TestMethod]
+		public void GetRuns_Basic()
+		{
+			string challengeName = "new challenge";
+
+			// Create a new challenge.
+			List<Split> SplitsBefore = new List<Split>();
+			SplitsBefore.Add(new Split { Name = "one" });
+			SplitsBefore.Add(new Split { Name = "two" });
+			SplitsBefore.Add(new Split { Name = "three" });
+			SplitsBefore.Add(new Split { Name = "four" });
+			List<Split> SplitsAfter = TestModel.CreateChallenge(challengeName, SplitsBefore);
+
+			List<int> splitValues = new List<int>();
+
+			// Start a new run then end it immediately.
+			TestModel.StartNewRun(challengeName);
+			TestModel.EndRun(challengeName);
+
+			// Start a new run and give it some values before ending it.
+			TestModel.StartNewRun(challengeName);
+			for (int i = 0; i < SplitsAfter.Count; i++)
+			{
+				splitValues.Add(i);
+			}
+			TestModel.UpdateRun(challengeName, splitValues);
+			TestModel.EndRun(challengeName);
+
+			splitValues.Clear();
+
+			// Start a new run, give it some values, but don't end it.
+			TestModel.StartNewRun(challengeName);
+			for (int i = 0; i < SplitsAfter.Count; i++)
+			{
+				splitValues.Add(i * 2 + 1);
+			}
+			TestModel.UpdateRun(challengeName, splitValues);
+
+			// Verify
+			List<List<int>> runs = TestModel.GetRuns(challengeName);
+			Assert.AreEqual(3, runs.Count);
+			Assert.AreEqual(4, runs[0].Count);
+			Assert.AreEqual(0, runs[0][0]);
+			Assert.AreEqual(0, runs[0][1]);
+			Assert.AreEqual(0, runs[0][2]);
+			Assert.AreEqual(0, runs[0][3]);
+			Assert.AreEqual(4, runs[1].Count);
+			Assert.AreEqual(0, runs[1][0]);
+			Assert.AreEqual(1, runs[1][1]);
+			Assert.AreEqual(2, runs[1][2]);
+			Assert.AreEqual(3, runs[1][3]);
+			Assert.AreEqual(4, runs[2].Count);
+			Assert.AreEqual(1, runs[2][0]);
+			Assert.AreEqual(3, runs[2][1]);
+			Assert.AreEqual(5, runs[2][2]);
+			Assert.AreEqual(7, runs[2][3]);
 		}
 	}
 }

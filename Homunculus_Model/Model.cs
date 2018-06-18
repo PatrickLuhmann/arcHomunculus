@@ -234,8 +234,8 @@ namespace Homunculus_Model
 				// Set the RunID.
 				countRow["RunID"] = runId;
 
-				// Set the Value.
-				countRow["Value"] = -1;
+				// Set the default Value.
+				countRow["Value"] = 0;
 
 				// Put the row into the table.
 				ChallengeRuns.Tables["Counts"].Rows.Add(countRow);
@@ -304,6 +304,9 @@ namespace Homunculus_Model
 
 		public List<List<int>> GetRuns(string ChallengeName)
 		{
+			if (ChallengeName == null)
+				throw new ArgumentNullException();
+
 			// Get the Challenge ID.
 			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
 										.Select("Name = '" + ChallengeName + "'");
