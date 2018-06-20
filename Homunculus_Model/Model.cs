@@ -107,9 +107,9 @@ namespace Homunculus_Model
 		/// Create a new challenge in the database.
 		/// </summary>
 		/// <param name="ChallengeName">The name of the challenge (must be unique).</param>
-		/// <param name="Splits">Ordered list of the splits for the challenge (must not be null or empty).</param>
+		/// <param name="Splits">Ordered list of the name of the splits for the challenge.</param>
 		/// <returns>Ordered list of the splits, with Handle filled in for future use.</returns>
-		public List<Split> CreateChallenge(string ChallengeName, List<Split> Splits)
+		public List<Split> CreateChallenge(string ChallengeName, List<string> Splits)
 		{
 			// Check for bad parameters.
 			if (ChallengeName == null || Splits == null)
@@ -118,6 +118,12 @@ namespace Homunculus_Model
 			if (Splits.Count == 0)
 				throw new ArgumentException();
 
+			// Check for duplicate challenge name.
+			if (ChallengeRuns.Tables["Challenges"]
+			                 .Select("Name = '" + ChallengeName + "'")
+			                 .Length != 0)
+				throw new ArgumentException();
+			
 			// Create a new entry in the Challenges table for the challenge.
 			DataTable Challenges = ChallengeRuns.Tables["Challenges"];
 			DataRow row = Challenges.NewRow();
@@ -126,21 +132,23 @@ namespace Homunculus_Model
 			Challenges.Rows.Add(row);
 
 			// Create the split entries in the Splits table.
+			List<Split> outSplits = new List<Split>();
 			DataTable dt = ChallengeRuns.Tables["Splits"];
 			DataRow dr;
 			for (int i = 0; i < Splits.Count; i++)
 			{
 				dr = dt.NewRow();
-				dr["Name"] = Splits[i].Name;
+				dr["Name"] = Splits[i];
 				dr["ChallengeID"] = challengeID;
 				dr["IndexWithinChallenge"] = i;
 				dt.Rows.Add(dr);
-				Splits[i].Handle = Convert.ToUInt32(dr["ID"]);
+				// Add to the list to return to the caller.
+				outSplits.Add(new Split { Name = Splits[i], Handle = Convert.ToUInt32(dr["ID"]) });
 			}
 
 			// TODO: Save db here?
 
-			return Splits;
+			return outSplits;
 		}
 
 		/// <summary>
