@@ -26,9 +26,27 @@
             </StackPanel>
         </DataTemplate>
     </Window.Resources>
+    
     <Grid>
-        <StackPanel>
-            <TextBlock FontSize="18" Text="Title area; this will eventually become a binding"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0">
+            <TextBlock>Challenges</TextBlock>
+            <ListView Name="challengesListView" ItemsSource="{Binding ChallengeList}">
+                <ListView.View>
+                    <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="Split Progress">
+                        <GridViewColumn Header="Challenge"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <Button Name="createChallengeButton" Click="createChallengeButton_Click" Margin="5,5,5,5" Content="{Binding CreateChallengeButtonText}"/>
+        </StackPanel>
+        
+        <StackPanel Grid.Column="1">
+            <TextBlock FontSize="18" Text="{Binding CurrentChallenge}"/>
             <ListView Name="splitsListView" ItemsSource="{Binding SplitList}">
                 <ListView.View>
                     <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="Split Progress">
@@ -59,7 +77,6 @@
                 <Button Name="failureButton" Click="failureButton_Click" Margin="5,5,5,5" Content="{Binding FailureButtonText}"/>
             </StackPanel>
             <TextBlock FontSize="24" Text="Timer will be here"/>
-            <Button Name="createChallengeButton" Click="createChallengeButton_Click" Margin="5,5,5,5" Content="{Binding CreateChallengeButtonText}"/>
         </StackPanel>
     </Grid>
 </Window>

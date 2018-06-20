@@ -42,7 +42,8 @@ namespace Homunculus_WPF
 
 		private void okButton_Click(object sender, RoutedEventArgs e)
 		{
-			((SplitsViewModel)DataContext).SetSplits(splitsTextBox.Text);
+//			((SplitsViewModel)DataContext).SetSplits(splitsTextBox.Text);
+			((SplitsViewModel)DataContext).AddNewChallenge(challengeName.Text, splitsTextBox.Text);
 
 			// NOTE: This causes the window to close automatically.
 			DialogResult = true;

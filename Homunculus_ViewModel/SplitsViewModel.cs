@@ -15,6 +15,16 @@ namespace Homunculus_ViewModel
 	public class SplitsViewModel : INotifyPropertyChanged
 	{
 		#region View properties
+		private ObservableCollection<string> challengeList;
+		public ObservableCollection<string> ChallengeList { get { return challengeList; } }
+
+		private string currentChallenge;
+		public string CurrentChallenge
+		{
+			get { return currentChallenge; }
+			set { currentChallenge = value; NotifyPropertyChanged(); }
+		}
+
 		private ObservableCollection<SplitVM> splitList;
 		public ObservableCollection<SplitVM> SplitList { get { return splitList; } }
 
@@ -128,6 +138,50 @@ namespace Homunculus_ViewModel
 			NotifyPropertyChanged("SplitList");
 		}
 
+		public int AddNewChallenge(string Name, string Splits)
+		{
+			// Challenge names must be unique.
+			if (challengeList.Contains(Name))
+				return -1;
+
+			// Extract the individual lines, ignoring empty lines.
+			string[] lines = Splits.Split(new string[] { Environment.NewLine },
+				StringSplitOptions.RemoveEmptyEntries);
+
+			// Make a new splitList.
+			List<Split> modelSplits = new List<Split>();
+			splitList = new ObservableCollection<SplitVM>();
+			foreach (string s in lines)
+			{
+				// Only add non-empty strings
+				if (s.Trim() != "")
+				{
+					// For the Model.
+					modelSplits.Add(new Split { Name = s.Trim() });
+
+					// For the View.
+					splitList.Add(new SplitVM
+					{
+						SplitName = s.Trim(),
+						CurrentValue = 0,
+						DiffValue = 0,
+						CurrentPbValue = 0
+					});
+				}
+			}
+
+			Challenges.CreateChallenge(Name, modelSplits);
+
+			CurrentChallenge = Name;
+
+			challengeList = new ObservableCollection<string>(Challenges.GetChallenges());
+
+			//NotifyPropertyChanged("SplitList");
+			//NotifyPropertyChanged("ChallengeList");
+
+			return 0;
+		}
+
 		public void CreateChallenge(string name, string splits)
 		{
 			// 
@@ -144,11 +198,18 @@ namespace Homunculus_ViewModel
 			// TODO: Do I need to do something here to get the list to update in the UI?
 		}
 		#endregion
+
+		#region Private Data Members
+		Model Challenges = new Model();
 		private int CurrentSplit = 0;
+		#endregion
 
 		public SplitsViewModel()
 		{
-			Model Challenges = new Model();
+			CurrentChallenge = "No challenge selected";
+
+			// Get the challenges.
+			challengeList = new ObservableCollection<string>(Challenges.GetChallenges());
 
 			// Get the splits.
 			// TODO: Placeholder data???
