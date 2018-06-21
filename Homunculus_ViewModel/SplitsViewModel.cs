@@ -16,7 +16,11 @@ namespace Homunculus_ViewModel
 	{
 		#region View properties
 		private ObservableCollection<string> challengeList;
-		public ObservableCollection<string> ChallengeList { get { return challengeList; } }
+		public ObservableCollection<string> ChallengeList
+		{
+			get { return challengeList; }
+			set { challengeList = value; NotifyPropertyChanged(); }
+		}
 
 		private string currentChallenge;
 		public string CurrentChallenge
@@ -26,8 +30,13 @@ namespace Homunculus_ViewModel
 		}
 
 		private ObservableCollection<SplitVM> splitList;
-		public ObservableCollection<SplitVM> SplitList { get { return splitList; } }
+		public ObservableCollection<SplitVM> SplitList
+		{
+			get { return splitList; }
+			set { splitList = value; NotifyPropertyChanged(); }
+		}
 
+#if false
 		private string splitTextList;
 		public string SplitTextList
 		{
@@ -42,6 +51,7 @@ namespace Homunculus_ViewModel
 				return splitTextList;
 			}
 		}
+#endif
 
 		// TODO: Should these really be properties? What if the View want to use
 		// different words, or even a different language?
@@ -92,6 +102,7 @@ namespace Homunculus_ViewModel
 				splitList[CurrentSplit].CurrentPbValue - splitList[CurrentSplit].CurrentValue;
 		}
 
+#if false
 		/// <summary>
 		/// Provide the list of splits as defined by the user.
 		/// </summary>
@@ -137,54 +148,37 @@ namespace Homunculus_ViewModel
 			// doesn't create a new object so I am going to use it.
 			NotifyPropertyChanged("SplitList");
 		}
+#endif
 
-		public int AddNewChallenge(string Name, string Splits)
+		public int AddNewChallenge(string Name, List<string> Splits)
 		{
 			// Challenge names must be unique.
 			if (challengeList.Contains(Name))
 				return -1;
 
-			// Extract the individual lines, ignoring empty lines.
-			string[] lines = Splits.Split(new string[] { Environment.NewLine },
-				StringSplitOptions.RemoveEmptyEntries);
+			// There must be at least one split.
+			if (Splits.Count == 0)
+				return -2;
 
-			// Make a new splitList.
-			List<Split> modelSplits = new List<Split>();
-			splitList = new ObservableCollection<SplitVM>();
-			foreach (string s in lines)
+			List<Split> modelSplits = Challenges.CreateChallenge(Name, Splits);
+
+			// Update the bindable properties.
+			CurrentChallenge = Name;
+			ChallengeList = new ObservableCollection<string>(Challenges.GetChallenges());
+			SplitList.Clear();
+			foreach (var split in modelSplits)
 			{
-				// Only add non-empty strings
-				if (s.Trim() != "")
+				SplitList.Add(new SplitVM
 				{
-					// For the Model.
-					modelSplits.Add(new Split { Name = s.Trim() });
-
-					// For the View.
-					splitList.Add(new SplitVM
-					{
-						SplitName = s.Trim(),
-						CurrentValue = 0,
-						DiffValue = 0,
-						CurrentPbValue = 0
-					});
-				}
+					SplitName = split.Name,
+					Handle = split.Handle,
+					CurrentPbValue = 0,
+					CurrentValue = 0,
+					DiffValue = 0
+				});
 			}
 
-			Challenges.CreateChallenge(Name, modelSplits);
-
-			CurrentChallenge = Name;
-
-			challengeList = new ObservableCollection<string>(Challenges.GetChallenges());
-
-			//NotifyPropertyChanged("SplitList");
-			//NotifyPropertyChanged("ChallengeList");
-
 			return 0;
-		}
-
-		public void CreateChallenge(string name, string splits)
-		{
-			// 
 		}
 
 		/// <summary>
@@ -243,6 +237,8 @@ namespace Homunculus_ViewModel
 
 	public class SplitVM : INotifyPropertyChanged
 	{
+		public UInt32 Handle; // Not a property.
+
 		public string SplitName { get; set; }
 
 		private int currentValue;

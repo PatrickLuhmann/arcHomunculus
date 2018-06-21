@@ -32,7 +32,13 @@ namespace Homunculus_WPF
 			// some reason. Then again, I eventually want to move to a List
 			// that has rows that can be moved up/down via the mouse, so maybe
 			// there is no point in trying to improve the text box approach.
-			splitsTextBox.Text = ((SplitsViewModel)DataContext).SplitTextList;
+			//			splitsTextBox.Text = ((SplitsViewModel)DataContext).SplitTextList;
+			string splitTextList = "";
+			foreach (var split in ((SplitsViewModel)DataContext).SplitList)
+			{
+				splitTextList += "\r\n" + split.SplitName;
+			}
+			splitsTextBox.Text = splitTextList;
 		}
 
 		private void addButton_Click(object sender, RoutedEventArgs e)
@@ -42,8 +48,21 @@ namespace Homunculus_WPF
 
 		private void okButton_Click(object sender, RoutedEventArgs e)
 		{
-//			((SplitsViewModel)DataContext).SetSplits(splitsTextBox.Text);
-			((SplitsViewModel)DataContext).AddNewChallenge(challengeName.Text, splitsTextBox.Text);
+			//			((SplitsViewModel)DataContext).SetSplits(splitsTextBox.Text);
+			// Convert the contents of the text box into a List of strings.
+			string[] lines = splitsTextBox.Text.Split(new string[] { Environment.NewLine },
+				StringSplitOptions.RemoveEmptyEntries);
+
+			// Make a new List<string>.
+			List<string> splitsStrings = new List<string>();
+			foreach (string s in lines)
+			{
+				// Only add non-empty strings
+				if (s.Trim() != "")
+					splitsStrings.Add(s.Trim());
+			}
+
+			((SplitsViewModel)DataContext).AddNewChallenge(challengeName.Text, splitsStrings);
 
 			// NOTE: This causes the window to close automatically.
 			DialogResult = true;
