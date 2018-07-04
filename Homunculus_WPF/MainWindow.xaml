@@ -60,6 +60,9 @@
             </StackPanel>
             <TextBlock FontSize="24" Text="Timer will be here"/>
             <Button Name="createChallengeButton" Click="createChallengeButton_Click" Margin="5,5,5,5" Content="{Binding CreateChallengeButtonText}"/>
+            <ListView Name="challengesListView" ItemsSource="{Binding ChallengeList}">
+                
+            </ListView>
         </StackPanel>
     </Grid>
 </Window>

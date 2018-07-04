@@ -15,6 +15,9 @@ namespace Homunculus_ViewModel
 	public class SplitsViewModel : INotifyPropertyChanged
 	{
 		#region View properties
+		private List<string> challengeList;
+		public List<string> ChallengeList {  get { return challengeList; } }
+
 		private ObservableCollection<SplitVM> splitList;
 		public ObservableCollection<SplitVM> SplitList { get { return splitList; } }
 
@@ -149,6 +152,11 @@ namespace Homunculus_ViewModel
 		public SplitsViewModel()
 		{
 			Model Challenges = new Model();
+
+			challengeList = new List<string>();
+			challengeList.Add("challenge1");
+			challengeList.Add("challenge2");
+			challengeList.Add("challenge3");
 
 			// Get the splits.
 			// TODO: Placeholder data???
