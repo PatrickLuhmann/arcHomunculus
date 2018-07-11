@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Homunculus_ViewModel;
+using System.Collections.Generic;
 
 namespace UnitTest_ViewModel
 {
@@ -13,6 +14,8 @@ namespace UnitTest_ViewModel
 		public void Setup()
 		{
 			// Everyone will use an instance of the class.
+			if (System.IO.File.Exists("homunculus.xml"))
+				System.IO.File.Delete("homunculus.xml");
 			vm = new SplitsViewModel();
 		}
 
@@ -117,6 +120,46 @@ namespace UnitTest_ViewModel
 			Assert.AreEqual(2, vm.SplitList[0].CurrentValue);
 			Assert.AreEqual(0, vm.SplitList[1].CurrentValue);
 			Assert.AreEqual(1, vm.SplitList[2].CurrentValue);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.ArgumentNullException))]
+		public void CreateChallenge_NullChallengeName()
+		{
+			List<string> splits = new List<string>();
+			splits.Add("split 1");
+			vm.CreateChallenge(null, splits);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.ArgumentNullException))]
+		public void CreateChallenge_NullSplitList()
+		{
+			vm.CreateChallenge("new challenge", null);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.ArgumentException))]
+		public void CreateChallenge_EmptySplitList()
+		{
+			List<string> splits = new List<string>();
+			vm.CreateChallenge("new challenge", splits);
+		}
+
+		[TestMethod]
+		public void CreateChallenge_Basic()
+		{
+			List<string> splits = new List<string>();
+			splits.Add("split 1");
+			splits.Add("split 2");
+			splits.Add("split 3");
+			splits.Add("split 4");
+			splits.Add("split 5");
+			vm.CreateChallenge("new challenge", splits);
+
+			Assert.AreEqual(1, vm.ChallengeList.Count);
+			Assert.AreEqual("new challenge", vm.ChallengeList[0]);
+			Assert.AreEqual("new challenge", vm.CurrentChallenge);
 		}
 	}
 }

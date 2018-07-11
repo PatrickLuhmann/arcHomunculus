@@ -18,6 +18,9 @@ namespace Homunculus_ViewModel
 		private List<string> challengeList;
 		public List<string> ChallengeList {  get { return challengeList; } }
 
+		private string currentChallenge;
+		public string CurrentChallenge {  get { return currentChallenge; } }
+
 		private ObservableCollection<SplitVM> splitList;
 		public ObservableCollection<SplitVM> SplitList { get { return splitList; } }
 
@@ -131,9 +134,19 @@ namespace Homunculus_ViewModel
 			NotifyPropertyChanged("SplitList");
 		}
 
-		public void CreateChallenge(string name, string splits)
+		public void CreateChallenge(string Name, List<string> Splits)
 		{
-			// 
+			if (Name == null || Splits == null)
+				throw new ArgumentNullException();
+			if (Splits.Count == 0)
+				throw new ArgumentException();
+
+			Challenges.CreateChallenge(Name, Splits);
+			challengeList = Challenges.GetChallenges();
+			currentChallenge = Name;
+
+			// TODO: Update SplitList, but it needs to use the class that the View
+			// needs, which is probably not just a list of strings.
 		}
 
 		/// <summary>
@@ -147,16 +160,29 @@ namespace Homunculus_ViewModel
 			// TODO: Do I need to do something here to get the list to update in the UI?
 		}
 		#endregion
+
 		private int CurrentSplit = 0;
+		private Model Challenges;
 
 		public SplitsViewModel()
 		{
-			Model Challenges = new Model();
+			Challenges = new Model();
+			if (System.IO.File.Exists("homunculus.xml"))
+			{
+				Challenges.LoadDatabase("homunculus.xml");
+			}
+			else
+			{
+				Challenges.CreateDatabase("homunculus.xml");
+			}
 
+			challengeList = Challenges.GetChallenges();
+#if false
 			challengeList = new List<string>();
 			challengeList.Add("challenge1");
 			challengeList.Add("challenge2");
 			challengeList.Add("challenge3");
+#endif
 
 			// Get the splits.
 			// TODO: Placeholder data???
