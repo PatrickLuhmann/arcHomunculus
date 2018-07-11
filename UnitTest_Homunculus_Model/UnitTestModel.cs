@@ -10,6 +10,7 @@ namespace UnitTest_Homunculus_Model
 	{
 		Model TestModel;
 		static List<string> SplitsBefore = new List<string>();
+		string DefaultFilename = "homtestdefault.xml";
 
 		[ClassInitialize]
 		public static void ClassInit(TestContext tc)
@@ -23,7 +24,145 @@ namespace UnitTest_Homunculus_Model
 		[TestInitialize]
 		public void Init()
 		{
+			// Start with a clean Model and database.
 			TestModel = new Model();
+			if (System.IO.File.Exists(DefaultFilename))
+				System.IO.File.Delete(DefaultFilename);
+			TestModel.CreateDatabase(DefaultFilename);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.ArgumentNullException))]
+		public void CreateDatabase_NullFilename()
+		{
+			TestModel.CreateDatabase(null);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.ArgumentException))]
+		public void CreateDatabase_FileAlreadyExists()
+		{
+			string filename = "notme.txt";
+			if (System.IO.File.Exists(filename))
+				System.IO.File.Delete(filename);
+
+			// Create the file.
+			using (System.IO.StreamWriter outFile = new System.IO.StreamWriter(filename))
+			{
+				outFile.WriteLine("This is the first line.");
+				outFile.WriteLine("This is the second line.");
+				outFile.WriteLine("This is the third line.");
+			}
+
+			// Try to create a new database using the known-to-exist filename.
+			TestModel.CreateDatabase(filename);
+		}
+
+		[TestMethod]
+		public void CreateDatabase_SecondOne()
+		{
+			// We already have the default database loaded; now try
+			// to load a different one to replace it. But first,
+			// add a challenge to the default so that there is a
+			// difference between the two.
+			TestModel.CreateChallenge("challenge1", SplitsBefore);
+
+			string filename = "homtest.xml";
+			if (System.IO.File.Exists(filename))
+				System.IO.File.Delete(filename);
+
+			// Main thing is to check for exceptions thrown during creation.
+			TestModel.CreateDatabase(filename);
+
+			List<string> challenges = TestModel.GetChallenges();
+			Assert.AreEqual(0, challenges.Count);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.ArgumentNullException))]
+		public void LoadDatabase_NullFilename()
+		{
+			TestModel.LoadDatabase(null);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.ArgumentException))]
+		public void LoadDatabase_FileDoesntExist()
+		{
+			string filename = "homtest.xml";
+			if (System.IO.File.Exists(filename))
+				System.IO.File.Delete(filename);
+
+			TestModel.LoadDatabase(filename);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.IO.FileFormatException))]
+		public void LoadDatabase_BadFile()
+		{
+			// Create a known-bad file.
+			string filename = "notme.txt";
+			if (System.IO.File.Exists(filename))
+				System.IO.File.Delete(filename);
+
+			// Create the file.
+			using (System.IO.StreamWriter outFile = new System.IO.StreamWriter(filename))
+			{
+				outFile.WriteLine("This is the first line.");
+				outFile.WriteLine("This is the second line.");
+				outFile.WriteLine("This is the third line.");
+			}
+
+			// Try to load it.
+			TestModel.LoadDatabase(filename);
+		}
+
+		[TestMethod]
+		public void LoadDatabase_LoadSameFileTwice()
+		{
+			// Load the same file twice (should be a no-op)
+			TestModel.LoadDatabase(DefaultFilename);
+			TestModel.LoadDatabase(DefaultFilename);
+
+			// A new Model object should be able to do the same thing.
+			Model NewTestModel = new Model();
+			NewTestModel.LoadDatabase(DefaultFilename);
+			NewTestModel.LoadDatabase(DefaultFilename);
+
+			// Now load a different file (although the contents are the same).
+			string newFilename = "test1.xml";
+			if (System.IO.File.Exists(newFilename))
+				System.IO.File.Delete(newFilename);
+			System.IO.File.Copy(DefaultFilename, newFilename);
+
+			TestModel.LoadDatabase(newFilename);
+			TestModel.LoadDatabase(newFilename);
+		}
+
+		[TestMethod]
+		public void DatabaseFileOperations()
+		{
+			// Add some content to the existing default database.
+			TestModel.CreateChallenge("challenge-ldb-1", SplitsBefore);
+			TestModel.CreateChallenge("challenge-ldb-2", SplitsBefore);
+			TestModel.CreateChallenge("challenge-ldb-3", SplitsBefore);
+
+			// Create a new Model instance.
+			Model NewTestModel = new Model();
+
+			// Load the existing database file into the new Model.
+			NewTestModel.LoadDatabase(DefaultFilename);
+
+			// Verify the contents of the database.
+			List<string> challenges = NewTestModel.GetChallenges();
+			Assert.AreEqual(3, challenges.Count);
+			// TODO: Can we assume the order in the list and/or in the XML file?
+			Assert.AreEqual("challenge-ldb-1", challenges[0]);
+			Assert.AreEqual("challenge-ldb-2", challenges[1]);
+			Assert.AreEqual("challenge-ldb-3", challenges[2]);
+
+			// TODO: Do I have to check everything here, or can I assume other tests
+			// will provide coverage?
 		}
 
 		[TestMethod]
@@ -84,6 +223,14 @@ namespace UnitTest_Homunculus_Model
 
 			// Try to create it again.
 			TestModel.CreateChallenge(challengeName, SplitsBefore);
+		}
+
+		[TestMethod]
+		public void GetChallenges_None()
+		{
+			List<string> challenges = TestModel.GetChallenges();
+
+			Assert.AreEqual(0, challenges.Count);
 		}
 
 		[TestMethod]

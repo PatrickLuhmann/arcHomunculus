@@ -11,97 +11,135 @@ namespace Homunculus_Model
 	{
 		// All data is stored in a single DataSet.
 		private DataSet ChallengeRuns;
-		//private string FileName;
+		private string DatabaseFilename;
 
 		public Model()
 		{
 			System.Diagnostics.Debug.WriteLine("Enter Model constructor");
 
-#if false
-			// Load the data file. If it doesn't exist, create it.
-			FileName = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\homunculus.xml";
-
-			if (System.IO.File.Exists(FileName))
-			{
-				ChallengeRuns = new DataSet();
-				ChallengeRuns.ReadXml(FileName);
-				System.Diagnostics.Debug.WriteLine("Model: data file loaded - " + FileName);
-			}
-			else
-#endif
-			{
-				ChallengeRuns = new DataSet("Homunculus");
-
-				// TABLE: Challenges
-				DataTable challenges = ChallengeRuns.Tables.Add("Challenges");
-				challenges.Columns.Add("ID", typeof(UInt32));
-				challenges.PrimaryKey = new DataColumn[] { challenges.Columns["ID"] };
-				challenges.Columns["ID"].AutoIncrement = true;
-				challenges.Columns["ID"].AutoIncrementSeed = 1;
-				challenges.Columns["ID"].AutoIncrementStep = 1;
-				challenges.Columns.Add("Name", typeof(string));
-
-				// TABLE: Splits
-				DataTable splits = ChallengeRuns.Tables.Add("Splits");
-				splits.Columns.Add("ID", typeof(UInt32));
-				splits.PrimaryKey = new DataColumn[] { splits.Columns["ID"] };
-				splits.Columns["ID"].AutoIncrement = true;
-				splits.Columns["ID"].AutoIncrementSeed = 1;
-				splits.Columns["ID"].AutoIncrementStep = 1;
-				splits.Columns.Add("Name", typeof(string));
-				splits.Columns.Add("ChallengeID", typeof(UInt32));
-				splits.Columns.Add("IndexWithinChallenge", typeof(UInt32));
-
-				// TABLE: Runs
-				DataTable runs = ChallengeRuns.Tables.Add("Runs");
-				runs.Columns.Add("ID", typeof(UInt32));
-				runs.PrimaryKey = new DataColumn[] { runs.Columns["ID"] };
-				runs.Columns["ID"].AutoIncrement = true;
-				runs.Columns["ID"].AutoIncrementSeed = 1;
-				runs.Columns["ID"].AutoIncrementStep = 1;
-				runs.Columns.Add("ChallengeID", typeof(UInt32));
-				runs.Columns.Add("Closed", typeof(bool));
-				runs.Columns["Closed"].DefaultValue = false;
-				runs.Columns.Add("PB", typeof(bool));
-				runs.Columns["PB"].DefaultValue = false;
-
-				// TABLE: Counts
-				DataTable counts = ChallengeRuns.Tables.Add("Counts");
-				counts.Columns.Add("ID", typeof(UInt32));
-				counts.PrimaryKey = new DataColumn[] { counts.Columns["ID"] };
-				counts.Columns["ID"].AutoIncrement = true;
-				counts.Columns["ID"].AutoIncrementSeed = 1;
-				counts.Columns["ID"].AutoIncrementStep = 1;
-				counts.Columns.Add("RunID", typeof(UInt32));
-				counts.Columns.Add("SplitID", typeof(UInt32));
-				counts.Columns.Add("Value", typeof(Int32));
-
-				// TABLE: ConfigParams
-				DataTable configParameters = ChallengeRuns.Tables.Add("ConfigParams");
-				configParameters.Columns.Add("Name", typeof(String));
-				configParameters.PrimaryKey = new DataColumn[] { configParameters.Columns["Name"] };
-				configParameters.Columns.Add("Value", typeof(String));
-
-				DataRow row;
-				row = configParameters.NewRow();
-				row["Name"] = "AppName";
-				row["Value"] = "Homunculus";
-				configParameters.Rows.Add(row);
-
-				row = configParameters.NewRow();
-				row["Name"] = "SchemaVersion";
-				row["Value"] = "1";
-				configParameters.Rows.Add(row);
-
-				//ChallengeRuns.WriteXml(FileName, XmlWriteMode.WriteSchema);
-				//System.Diagnostics.Debug.WriteLine("Model: data file created - " + FileName);
-			}
+			ChallengeRuns = new DataSet("Homunculus");
 		}
 
-		// Public interface methods???
-		public bool Load() { return false; }
-		public bool Save() { return false; }
-		public bool Create() { return false; }
+		public void LoadDatabase(string Filename)
+		{
+			System.Diagnostics.Debug.WriteLine("Model: Load database file: " + Filename);
+			if (Filename == null)
+				throw new ArgumentNullException();
+			if (!System.IO.File.Exists(Filename))
+				throw new ArgumentException();
+
+
+			// Do some basic validation of the XML.
+			// Make sure we throw our own exception.
+			string appName = "";
+			UInt32 version;
+			DataSet tempDS = new DataSet("tempDS");
+			try
+			{
+				// This will throw an exception if it is not a
+				// valid XML file.
+				//ChallengeRuns.ReadXmlSchema(DatabaseFilename);
+				tempDS.ReadXml(Filename);
+
+				// Now check to make sure that this XML is for our app.
+				DataRow row;
+				row = tempDS.Tables["ConfigParams"].Rows.Find("AppName");
+				appName = (string)row["Value"];
+				System.Diagnostics.Debug.WriteLine("AppName: " + appName);
+				row = tempDS.Tables["ConfigParams"].Rows.Find("SchemaVersion");
+				version = UInt32.Parse((string)row["Value"]);
+				System.Diagnostics.Debug.WriteLine("SchemaVersion: " + row["Value"]);
+			}
+			catch
+			{
+				throw new System.IO.FileFormatException();
+			}
+			if (appName != "Homunculus" || version != 1)
+			{
+				throw new System.IO.FileFormatException();
+			}
+
+			// Update the Model now that everything is validated.
+			ChallengeRuns = tempDS;
+			DatabaseFilename = Filename;
+			System.Diagnostics.Debug.WriteLine("Valid Homunculus file selected: " + DatabaseFilename);
+		}
+
+		public void CreateDatabase(string Filename)
+		{
+			if (Filename == null)
+				throw new ArgumentNullException();
+			if (System.IO.File.Exists(Filename))
+				throw new ArgumentException();
+
+			// Create the database schema.
+			ChallengeRuns = new DataSet("Homunculus");
+
+			// TABLE: Challenges
+			DataTable challenges = ChallengeRuns.Tables.Add("Challenges");
+			challenges.Columns.Add("ID", typeof(UInt32));
+			challenges.PrimaryKey = new DataColumn[] { challenges.Columns["ID"] };
+			challenges.Columns["ID"].AutoIncrement = true;
+			challenges.Columns["ID"].AutoIncrementSeed = 1;
+			challenges.Columns["ID"].AutoIncrementStep = 1;
+			challenges.Columns.Add("Name", typeof(string));
+
+			// TABLE: Splits
+			DataTable splits = ChallengeRuns.Tables.Add("Splits");
+			splits.Columns.Add("ID", typeof(UInt32));
+			splits.PrimaryKey = new DataColumn[] { splits.Columns["ID"] };
+			splits.Columns["ID"].AutoIncrement = true;
+			splits.Columns["ID"].AutoIncrementSeed = 1;
+			splits.Columns["ID"].AutoIncrementStep = 1;
+			splits.Columns.Add("Name", typeof(string));
+			splits.Columns.Add("ChallengeID", typeof(UInt32));
+			splits.Columns.Add("IndexWithinChallenge", typeof(UInt32));
+
+			// TABLE: Runs
+			DataTable runs = ChallengeRuns.Tables.Add("Runs");
+			runs.Columns.Add("ID", typeof(UInt32));
+			runs.PrimaryKey = new DataColumn[] { runs.Columns["ID"] };
+			runs.Columns["ID"].AutoIncrement = true;
+			runs.Columns["ID"].AutoIncrementSeed = 1;
+			runs.Columns["ID"].AutoIncrementStep = 1;
+			runs.Columns.Add("ChallengeID", typeof(UInt32));
+			runs.Columns.Add("Closed", typeof(bool));
+			runs.Columns["Closed"].DefaultValue = false;
+			runs.Columns.Add("PB", typeof(bool));
+			runs.Columns["PB"].DefaultValue = false;
+
+			// TABLE: Counts
+			DataTable counts = ChallengeRuns.Tables.Add("Counts");
+			counts.Columns.Add("ID", typeof(UInt32));
+			counts.PrimaryKey = new DataColumn[] { counts.Columns["ID"] };
+			counts.Columns["ID"].AutoIncrement = true;
+			counts.Columns["ID"].AutoIncrementSeed = 1;
+			counts.Columns["ID"].AutoIncrementStep = 1;
+			counts.Columns.Add("RunID", typeof(UInt32));
+			counts.Columns.Add("SplitID", typeof(UInt32));
+			counts.Columns.Add("Value", typeof(Int32));
+
+			// TABLE: ConfigParams
+			DataTable configParameters = ChallengeRuns.Tables.Add("ConfigParams");
+			configParameters.Columns.Add("Name", typeof(String));
+			configParameters.PrimaryKey = new DataColumn[] { configParameters.Columns["Name"] };
+			configParameters.Columns.Add("Value", typeof(String));
+
+			DataRow row;
+			row = configParameters.NewRow();
+			row["Name"] = "AppName";
+			row["Value"] = "Homunculus";
+			configParameters.Rows.Add(row);
+
+			row = configParameters.NewRow();
+			row["Name"] = "SchemaVersion";
+			row["Value"] = "1";
+			configParameters.Rows.Add(row);
+
+			// Save the schema to the database file.
+			DatabaseFilename = Filename;
+			Save();
+		}
 
 		/// <summary>
 		/// Create a new challenge in the database.
@@ -146,9 +184,16 @@ namespace Homunculus_Model
 				outSplits.Add(new Split { Name = Splits[i], Handle = Convert.ToUInt32(dr["ID"]) });
 			}
 
-			// TODO: Save db here?
+			Save();
 
 			return outSplits;
+		}
+
+		private void Save()
+		{
+			// Save the data to the database file.
+			ChallengeRuns.WriteXml(DatabaseFilename, XmlWriteMode.WriteSchema);
+			System.Diagnostics.Debug.WriteLine("Model: data file saved - " + DatabaseFilename);
 		}
 
 		/// <summary>
