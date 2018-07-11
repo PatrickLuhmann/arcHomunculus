@@ -28,7 +28,6 @@ namespace Homunculus_Model
 			if (!System.IO.File.Exists(Filename))
 				throw new ArgumentException();
 
-
 			// Do some basic validation of the XML.
 			// Make sure we throw our own exception.
 			string appName = "";

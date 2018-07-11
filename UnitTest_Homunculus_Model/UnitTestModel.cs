@@ -189,6 +189,16 @@ namespace UnitTest_Homunculus_Model
 		}
 
 		[TestMethod]
+		[ExpectedException(typeof(System.NullReferenceException))]
+		public void CreateChallenge_NoDatabaseLoaded()
+		{
+			// Use a new Model for this test.
+			Model newTestModel = new Model();
+
+			newTestModel.CreateChallenge("new challenge", SplitsBefore);
+		}
+
+		[TestMethod]
 		[ExpectedException(typeof(System.ArgumentNullException))]
 		public void CreateChallenge_NullName()
 		{
