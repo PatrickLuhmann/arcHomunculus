@@ -28,7 +28,7 @@
     </Window.Resources>
     <Grid>
         <StackPanel>
-            <TextBlock FontSize="18" Text="Title area; this will eventually become a binding"/>
+            <TextBlock FontSize="18" Text="{Binding CurrentChallenge}"/>
             <ListView Name="splitsListView" ItemsSource="{Binding SplitList}">
                 <ListView.View>
                     <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="Split Progress">

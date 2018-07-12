@@ -145,8 +145,22 @@ namespace Homunculus_ViewModel
 			challengeList = Challenges.GetChallenges();
 			currentChallenge = Name;
 
-			// TODO: Update SplitList, but it needs to use the class that the View
-			// needs, which is probably not just a list of strings.
+			splitList = new ObservableCollection<SplitVM>();
+			foreach (string splitName in Splits)
+			{
+				splitList.Add(new SplitVM
+				{
+					SplitName = splitName,
+					CurrentValue = 0,
+					DiffValue = 0,
+					CurrentPbValue = 0
+				});
+			}
+
+			// We changed some of our public properties.
+			NotifyPropertyChanged("ChallengeList");
+			NotifyPropertyChanged("CurrentChallenge");
+			NotifyPropertyChanged("SplitList");
 		}
 
 		/// <summary>

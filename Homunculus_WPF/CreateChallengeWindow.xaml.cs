@@ -46,7 +46,16 @@ namespace Homunculus_WPF
 
 			string name = challengeName.Text;
 			List<string> splits = new List<string>();
-			//((SplitsViewModel)DataContext).CreateChallenge(name, splits);
+			// Extract the individual lines, ignoring empty lines.
+			string[] lines = splitsTextBox.Text.Split(new string[] { Environment.NewLine },
+				StringSplitOptions.RemoveEmptyEntries);
+			foreach (string s in lines)
+			{
+				// Only add non-empty strings
+				if (s.Trim() != "")
+					splits.Add(s.Trim());
+			}
+			((SplitsViewModel)DataContext).CreateChallenge(name, splits);
 
 			// NOTE: This causes the window to close automatically.
 			DialogResult = true;
