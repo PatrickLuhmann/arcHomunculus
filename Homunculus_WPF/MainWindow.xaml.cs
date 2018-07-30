@@ -64,5 +64,11 @@ namespace Homunculus_WPF
 				splitsListView.SelectedIndex = 0;
 			}
 		}
+
+		private void challengesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			ListView lv = (sender as ListView);
+			((SplitsViewModel)DataContext).CurrentChallenge = lv.SelectedItem.ToString();
+		}
 	}
 }

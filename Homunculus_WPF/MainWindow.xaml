@@ -27,21 +27,25 @@
         </DataTemplate>
     </Window.Resources>
     <Grid>
-        <StackPanel>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0" Grid.Row="0">
             <TextBlock FontSize="18" Text="{Binding CurrentChallenge}"/>
             <ListView Name="splitsListView" ItemsSource="{Binding SplitList}">
                 <ListView.View>
                     <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="Split Progress">
-                        <GridViewColumn Header="Split" Width="500"
+                        <GridViewColumn Header="Split" Width="215"
                                         DisplayMemberBinding="{Binding SplitName}"/>
-                        <GridViewColumn Header="Now" Width="75">
+                        <GridViewColumn Header="Now" Width="50">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding CurrentValue}" TextAlignment="Center" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Diff" Width="75">
+                        <GridViewColumn Header="Diff" Width="50">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding DiffValue}" TextAlignment="Center" />
@@ -49,7 +53,7 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
                         <!-- This is a different way of defining the cell template. -->
-                        <GridViewColumn Header="PB" Width="75"
+                        <GridViewColumn Header="PB" Width="70"
                                         CellTemplate="{StaticResource PbValueTemplate}"/>
                     </GridView>
                 </ListView.View>
@@ -59,10 +63,14 @@
                 <Button Name="failureButton" Click="failureButton_Click" Margin="5,5,5,5" Content="{Binding FailureButtonText}"/>
             </StackPanel>
             <TextBlock FontSize="24" Text="Timer will be here"/>
-            <Button Name="createChallengeButton" Click="createChallengeButton_Click" Margin="5,5,5,5" Content="{Binding CreateChallengeButtonText}"/>
-            <ListView Name="challengesListView" ItemsSource="{Binding ChallengeList}">
-                
+        </StackPanel>
+        <StackPanel Grid.Column="1" Grid.Row="0">
+            <TextBlock TextAlignment="Center">List of Challenges</TextBlock>
+            <ListView Name="challengesListView"
+                      ItemsSource="{Binding ChallengeList}"
+                      SelectionChanged="challengesListView_SelectionChanged">
             </ListView>
+            <Button Name="createChallengeButton" Click="createChallengeButton_Click" Margin="5,5,5,5" Content="{Binding CreateChallengeButtonText}"/>
         </StackPanel>
     </Grid>
 </Window>

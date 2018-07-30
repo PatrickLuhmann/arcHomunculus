@@ -19,7 +19,39 @@ namespace Homunculus_ViewModel
 		public List<string> ChallengeList {  get { return challengeList; } }
 
 		private string currentChallenge;
-		public string CurrentChallenge {  get { return currentChallenge; } }
+		public string CurrentChallenge {
+			get { return currentChallenge; }
+			set
+			{
+				// Grab the name of the challenge.
+				currentChallenge = value;
+
+				// Get the split info for this challenge.
+				List<Split> mSplits = Challenges.GetSplits(currentChallenge);
+
+				// TODO: Get the PB run for this challenge.
+
+				// Create the list of splits for the View.
+				// Assume there isn't an active run for this split,
+				// so set CurrentValue to 0.
+				// CurrentPbValue comes from the runs.
+				splitList = new ObservableCollection<SplitVM>();
+				foreach (var split in mSplits)
+				{
+					splitList.Add(new SplitVM
+					{
+						SplitName = split.Name,
+						CurrentValue = 0,
+						DiffValue = 5,
+						CurrentPbValue = 7
+					});
+				}
+
+				// We changed some of our public properties.
+				NotifyPropertyChanged("CurrentChallenge");
+				NotifyPropertyChanged("SplitList");
+			}
+		}
 
 		private ObservableCollection<SplitVM> splitList;
 		public ObservableCollection<SplitVM> SplitList { get { return splitList; } }
