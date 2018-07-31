@@ -24,28 +24,45 @@ namespace Homunculus_ViewModel
 			set
 			{
 				// Grab the name of the challenge.
-				currentChallenge = value;
+				if (value == null)
+					currentChallenge = "";
+				else
+					currentChallenge = value;
 
-				// Get the split info for this challenge.
-				List<Split> mSplits = Challenges.GetSplits(currentChallenge);
-
-				// TODO: Get the PB run for this challenge.
-
-				// Create the list of splits for the View.
-				// Assume there isn't an active run for this split,
-				// so set CurrentValue to 0.
-				// CurrentPbValue comes from the runs.
-				splitList = new ObservableCollection<SplitVM>();
-				foreach (var split in mSplits)
+				if (currentChallenge == "")
 				{
-					splitList.Add(new SplitVM
-					{
-						SplitName = split.Name,
-						CurrentValue = 0,
-						DiffValue = 5,
-						CurrentPbValue = 7
-					});
+					// Clear the list of splits.
+					// This also covers the case where the app is launched with no
+					// challenges defined; we don't want splitList to be null.
+					splitList = new ObservableCollection<SplitVM>();
 				}
+				else
+				{
+					// Get the split info for this challenge.
+					List<Split> mSplits = Challenges.GetSplits(currentChallenge);
+
+					// TODO: Get the PB run for this challenge.
+
+					// Create the list of splits for the View.
+					// Assume there isn't an active run for this split,
+					// so set CurrentValue to 0.
+					// CurrentPbValue comes from the runs.
+					splitList = new ObservableCollection<SplitVM>();
+					foreach (var split in mSplits)
+					{
+						splitList.Add(new SplitVM
+						{
+							SplitName = split.Name,
+							CurrentValue = 0,
+							DiffValue = 5,
+							CurrentPbValue = 7
+						});
+					}
+				}
+
+				// Remember this choice.
+				Properties.Settings.Default.LastUsedChallenge = currentChallenge;
+				Properties.Settings.Default.Save();
 
 				// We changed some of our public properties.
 				NotifyPropertyChanged("CurrentChallenge");
@@ -175,7 +192,7 @@ namespace Homunculus_ViewModel
 
 			Challenges.CreateChallenge(Name, Splits);
 			challengeList = Challenges.GetChallenges();
-			currentChallenge = Name;
+			CurrentChallenge = Name;
 
 			splitList = new ObservableCollection<SplitVM>();
 			foreach (string splitName in Splits)
@@ -205,6 +222,13 @@ namespace Homunculus_ViewModel
 			splitList.Add(new SplitVM { SplitName = "New Split" });
 			// TODO: Do I need to do something here to get the list to update in the UI?
 		}
+		
+		public void OnClosing(object s, CancelEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine("Enter ViewModel::OnClosing");
+
+			// TODO: What do we need to do when the app is closing?
+		}
 		#endregion
 
 		private int CurrentSplit = 0;
@@ -212,6 +236,7 @@ namespace Homunculus_ViewModel
 
 		public SplitsViewModel()
 		{
+			// Create our Model and load it from the database file.
 			Challenges = new Model();
 			if (System.IO.File.Exists("homunculus.xml"))
 			{
@@ -222,29 +247,10 @@ namespace Homunculus_ViewModel
 				Challenges.CreateDatabase("homunculus.xml");
 			}
 
+			// Get the challenges and set one to current, if available.
 			challengeList = Challenges.GetChallenges();
-#if false
-			challengeList = new List<string>();
-			challengeList.Add("challenge1");
-			challengeList.Add("challenge2");
-			challengeList.Add("challenge3");
-#endif
-
-			// Get the splits.
-			// TODO: Placeholder data???
-			// TODO: Does the Model hold the instantiation as well as the schema???
-			splitList = new ObservableCollection<SplitVM>();
-#if false
-			splitList.Add(new SplitVM { SplitName = "Last Giant", CurrentValue = 0, DiffValue = 0, CurrentPbValue = 0 });
-			splitList.Add(new SplitVM { SplitName = "Pursuer", CurrentValue = 0, DiffValue = 0, CurrentPbValue = 0 });
-			splitList.Add(new SplitVM { SplitName = "Last Giant", CurrentValue = 0, DiffValue = 0, CurrentPbValue = 0 });
-			splitList.Add(new SplitVM { SplitName = "Pursuer", CurrentValue = 0, DiffValue = 0, CurrentPbValue = 0 });
-			splitList.Add(new SplitVM { SplitName = "Last Giant", CurrentValue = 0, DiffValue = 0, CurrentPbValue = 0 });
-			splitList.Add(new SplitVM { SplitName = "Pursuer", CurrentValue = 0, DiffValue = 0, CurrentPbValue = 0 });
-
-			// TODO: Placeholder data.
-			splitTextList = "This string should never be seen.";
-#endif
+			CurrentChallenge = Properties.Settings.Default.LastUsedChallenge;
+			
 			SuccessButtonText = "Success";
 		}
 

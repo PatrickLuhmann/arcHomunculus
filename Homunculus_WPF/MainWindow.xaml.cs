@@ -25,6 +25,9 @@ namespace Homunculus_WPF
 		{
 			InitializeComponent();
 
+			// The ViewModel wants to know when the app closes.
+			Closing += ((SplitsViewModel)DataContext).OnClosing;
+
 			splitsListView.SelectedIndex = 0;
 		}
 
