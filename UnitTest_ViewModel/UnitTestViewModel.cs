@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Homunculus_ViewModel;
 using System.Collections.Generic;
+using Moq;
 
 namespace UnitTest_ViewModel
 {
@@ -9,14 +10,25 @@ namespace UnitTest_ViewModel
 	public class UnitTestViewModel
 	{
 		SplitsViewModel vm;
+		Mock<IUserSettings> mockSettings;
 
 		[TestInitialize]
 		public void Setup()
 		{
-			// Everyone will use an instance of the class.
+			// All tests start without a database, simulating the first
+			// time the app is launched.
 			if (System.IO.File.Exists("homunculus.xml"))
 				System.IO.File.Delete("homunculus.xml");
-			vm = new SplitsViewModel();
+
+			// Mock the user settings database because we don't want the
+			// unit tests using the real thing, which will screw up what
+			// the user might be doing on their own.
+			mockSettings = new Mock<IUserSettings>();
+			// First launch means there is no value for LastUsedChallenge.
+			mockSettings.Setup(us => us.GetUserSetting("LastUsedChallenge"))
+				.Returns("");
+
+			vm = new SplitsViewModel(mockSettings.Object);
 		}
 
 		[TestMethod]
@@ -28,6 +40,9 @@ namespace UnitTest_ViewModel
 
 			// The split list, text version will be empty.
 			Assert.AreEqual("", vm.SplitTextList);
+
+			// There is no current challenge.
+			Assert.AreEqual("", vm.CurrentChallenge);
 		}
 
 		[TestMethod]
@@ -155,11 +170,41 @@ namespace UnitTest_ViewModel
 			splits.Add("split 3");
 			splits.Add("split 4");
 			splits.Add("split 5");
+
 			vm.CreateChallenge("new challenge", splits);
 
 			Assert.AreEqual(1, vm.ChallengeList.Count);
 			Assert.AreEqual("new challenge", vm.ChallengeList[0]);
 			Assert.AreEqual("new challenge", vm.CurrentChallenge);
+			mockSettings.Verify(us => us.SetUserSetting("LastUsedChallenge", "new challenge"));
+		}
+
+		[TestMethod]
+		public void CorruptedUserSettingsFile()
+		{
+			// Need to use our own test objects for this one.
+			Mock<IUserSettings> myMockSettings = new Mock<IUserSettings>();
+
+			// Inject an invalid value for all setting names.
+			mockSettings.Setup(us => us.GetUserSetting(It.IsAny<string>()))
+				.Returns("always return an invalid value in this test");
+
+			// All tests start without a database, simulating the first
+			// time the app is launched.
+			if (System.IO.File.Exists("homunculus.xml"))
+				System.IO.File.Delete("homunculus.xml");
+
+			SplitsViewModel mySvm = new SplitsViewModel(mockSettings.Object);
+
+			// The split list will exist and it will be empty.
+			Assert.IsNotNull(vm.SplitList);
+			Assert.AreEqual(0, vm.SplitList.Count);
+
+			// The split list, text version will be empty.
+			Assert.AreEqual("", vm.SplitTextList);
+
+			// There is no current challenge.
+			Assert.AreEqual("", vm.CurrentChallenge);
 		}
 	}
 }

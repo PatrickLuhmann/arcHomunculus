@@ -27,7 +27,15 @@ namespace Homunculus_ViewModel
 				if (value == null)
 					currentChallenge = "";
 				else
-					currentChallenge = value;
+				{
+					// Make sure that the challenge is in the database.
+					if (challengeList.Contains(value))
+//					if (challengeList.Exists(s => s.Equals(value)))
+						currentChallenge = value;
+					else
+						currentChallenge = "";
+
+				}
 
 				if (currentChallenge == "")
 				{
@@ -61,8 +69,8 @@ namespace Homunculus_ViewModel
 				}
 
 				// Remember this choice.
-				Properties.Settings.Default.LastUsedChallenge = currentChallenge;
-				Properties.Settings.Default.Save();
+				UserSettings.SetUserSetting("LastUsedChallenge", currentChallenge);
+				UserSettings.Save();
 
 				// We changed some of our public properties.
 				NotifyPropertyChanged("CurrentChallenge");
@@ -231,11 +239,26 @@ namespace Homunculus_ViewModel
 		}
 		#endregion
 
+		// Break the tight coupling between the app and the data store.
+		// This allows for unit testing via a mock.
+		private IUserSettings UserSettings;
+		private StandardUserSettings MySettings;
+
 		private int CurrentSplit = 0;
 		private Model Challenges;
 
-		public SplitsViewModel()
+		public SplitsViewModel(IUserSettings Settings)
 		{
+			// If the caller is not supplying a user settings
+			// interface object, just make our own.
+			if (Settings == null)
+			{
+				MySettings = new StandardUserSettings();
+				UserSettings = MySettings;
+			}
+			else
+				UserSettings = Settings;
+
 			// Create our Model and load it from the database file.
 			Challenges = new Model();
 			if (System.IO.File.Exists("homunculus.xml"))
@@ -249,12 +272,14 @@ namespace Homunculus_ViewModel
 
 			// Get the challenges and set one to current, if available.
 			challengeList = Challenges.GetChallenges();
-			CurrentChallenge = Properties.Settings.Default.LastUsedChallenge;
+			CurrentChallenge = (string)UserSettings.GetUserSetting("LastUsedChallenge");
 			
 			SuccessButtonText = "Success";
 		}
 
-
+		public SplitsViewModel() : this(null)
+		{
+		}
 
 		public event PropertyChangedEventHandler PropertyChanged;
 		private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
@@ -316,6 +341,32 @@ namespace Homunculus_ViewModel
 			{
 				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
+		}
+	}
+
+	public interface IUserSettings
+	{
+		object GetUserSetting(string name);
+		void SetUserSetting(string name, object value);
+		void Save();
+	}
+
+	public class StandardUserSettings : IUserSettings
+	{
+		public object GetUserSetting(string name)
+		{
+			// Access the user.config file for the requested value.
+			return Properties.Settings.Default[name];
+		}
+
+		public void SetUserSetting(string name, object value)
+		{
+			Properties.Settings.Default[name] = value;
+		}
+
+		public void Save()
+		{
+			Properties.Settings.Default.Save();
 		}
 	}
 }
