@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Homunculus_Model;
 using System.Collections.Generic;
+using System.Data;
 
 namespace UnitTest_Homunculus_Model
 {
@@ -642,6 +643,100 @@ namespace UnitTest_Homunculus_Model
 			Assert.AreEqual(3, runs[2][1]);
 			Assert.AreEqual(5, runs[2][2]);
 			Assert.AreEqual(7, runs[2][3]);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(ArgumentNullException))]
+		public void DeleteChallenge_NullName()
+		{
+			TestModel.DeleteChallenge(null);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(ArgumentException))]
+		public void DeleteChallenge_UnknownChallengeName()
+		{
+			TestModel.DeleteChallenge("this challenge does not exist");
+		}
+
+		[TestMethod]
+		public void DeleteChallenge_NoRuns()
+		{
+			TestModel.CreateChallenge("name 1", SplitsBefore);
+
+			// This check is redundant when CreateChallenge is validated, but
+			// I like to have it anyway so that I can focus on this test
+			// and not worry about anything else.
+			List<string> challenges = TestModel.GetChallenges();
+			Assert.AreEqual(1, challenges.Count);
+			Assert.IsTrue(challenges.Contains("name 1"));
+			List<Split> splits = TestModel.GetSplits("name 1");
+			Assert.AreEqual(4, splits.Count);
+
+			TestModel.DeleteChallenge("name 1");
+
+			challenges = TestModel.GetChallenges();
+			Assert.AreEqual(0, challenges.Count);
+
+			// TODO: Is there a better way to verify that the splits have been deleted?
+			DataSet verifyDb = new DataSet("verifyDb");
+			verifyDb.ReadXml(DefaultFilename);
+			Assert.AreEqual(0, verifyDb.Tables["Challenges"].Rows.Count);
+			Assert.AreEqual(0, verifyDb.Tables["Splits"].Rows.Count);
+			Assert.AreEqual(0, verifyDb.Tables["Runs"].Rows.Count);
+			Assert.AreEqual(0, verifyDb.Tables["Counts"].Rows.Count);
+		}
+
+		[TestMethod]
+		public void DeleteChallenge_RunsAndCounts()
+		{
+			// Create several challenges, only one of which is to be deleted.
+			TestModel.CreateChallenge("name 0", SplitsBefore);
+			TestModel.CreateChallenge("name 1", SplitsBefore);
+			TestModel.CreateChallenge("name 2", SplitsBefore);
+			TestModel.CreateChallenge("name 3", SplitsBefore);
+			TestModel.CreateChallenge("name 4", SplitsBefore);
+
+			// Add three runs to the doomed challenge, along with runs for
+			// some of the other challenges.
+			TestModel.StartNewRun("name 4");
+			TestModel.EndRun("name 4");
+			TestModel.StartNewRun("name 4");
+			TestModel.EndRun("name 4");
+			TestModel.StartNewRun("name 1");
+			TestModel.EndRun("name 1");
+			TestModel.StartNewRun("name 1");
+			TestModel.EndRun("name 1");
+			TestModel.StartNewRun("name 1");
+			TestModel.EndRun("name 1");
+			TestModel.StartNewRun("name 0");
+			TestModel.EndRun("name 0");
+			TestModel.StartNewRun("name 0");
+			TestModel.EndRun("name 0");
+			TestModel.StartNewRun("name 2");
+			TestModel.EndRun("name 2");
+
+			// This check is redundant when CreateChallenge is validated, but
+			// I like to have it anyway so that I can focus on this test
+			// and not worry about anything else.
+			List<string> challenges = TestModel.GetChallenges();
+			Assert.AreEqual(5, challenges.Count);
+			Assert.IsTrue(challenges.Contains("name 1"));
+			List<Split> splits = TestModel.GetSplits("name 1");
+			Assert.AreEqual(4, splits.Count);
+
+			TestModel.DeleteChallenge("name 1");
+
+			challenges = TestModel.GetChallenges();
+			Assert.AreEqual(4, challenges.Count);
+
+			// TODO: Is there a better way to verify that the splits, runs, and counts have been deleted?
+			DataSet verifyDb = new DataSet("verifyDb");
+			verifyDb.ReadXml(DefaultFilename);
+			Assert.AreEqual(4, verifyDb.Tables["Challenges"].Rows.Count);
+			Assert.AreEqual(4 * 4, verifyDb.Tables["Splits"].Rows.Count);
+			Assert.AreEqual(2 + 2 + 1, verifyDb.Tables["Runs"].Rows.Count);
+			Assert.AreEqual(4 * (2 + 2 + 1), verifyDb.Tables["Counts"].Rows.Count);
 		}
 	}
 }

@@ -188,6 +188,61 @@ namespace Homunculus_Model
 			return outSplits;
 		}
 
+		/// <summary>
+		/// Deletes the specified challenge from the database.
+		/// </summary>
+		/// <param name="ChallengeName">The name of the challenge</param>
+		public void DeleteChallenge(string ChallengeName)
+		{
+			// Check for bad parameter.
+			if (ChallengeName == null)
+				throw new ArgumentNullException();
+
+			DataRow[] drChallenge = ChallengeRuns.Tables["Challenges"]
+				.Select("Name = '" + ChallengeName + "'");
+
+			// Verify that the challenge was in the database.
+			if (drChallenge.Count() == 0)
+				throw new ArgumentException();
+
+			// TODO: Verify that only one row is returned?
+
+			UInt32 challengeID = Convert.ToUInt32(drChallenge[0]["ID"]);
+
+			// Get the splits that go with this challenge.
+			DataRow[] drSplits = ChallengeRuns.Tables["Splits"]
+				.Select("ChallengeID = " + challengeID.ToString(), "IndexWithinChallenge ASC");
+
+			// Get the runs that go with this challenge.
+			DataRow[] drRuns = ChallengeRuns.Tables["Runs"]
+				.Select("ChallengeID = " + challengeID.ToString());
+
+			// Delete the counts associated with each run.
+			// Then delete the run itself.
+			foreach (DataRow dr in drRuns)
+			{
+				// Get the counts that go with this run.
+				DataRow[] drCounts = ChallengeRuns.Tables["Counts"]
+					.Select("RunID = " + dr["ID"].ToString());
+
+				foreach (DataRow row in drCounts)
+					row.Delete();
+
+				dr.Delete();
+			}
+
+			// Delete the splits.
+			foreach (DataRow dr in drSplits)
+				dr.Delete();
+
+			// Finally, delete the challenge.
+			drChallenge[0].Delete();
+
+			ChallengeRuns.AcceptChanges();
+
+			Save();
+		}
+
 		private void Save()
 		{
 			// Save the data to the database file.
