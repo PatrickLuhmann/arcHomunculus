@@ -244,7 +244,7 @@ namespace Homunculus_ViewModel
 		private IUserSettings UserSettings;
 
 		private int CurrentSplit = 0;
-		private Model Challenges;
+		private ModelXml Challenges;
 
 		public SplitsViewModel(IUserSettings Settings)
 		{
@@ -258,7 +258,7 @@ namespace Homunculus_ViewModel
 				UserSettings = Settings;
 
 			// Create our Model and load it from the database file.
-			Challenges = new Model();
+			Challenges = new ModelXml();
 			if (System.IO.File.Exists("homunculus.xml"))
 			{
 				Challenges.LoadDatabase("homunculus.xml");

@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace Homunculus_Model
 {
-	public class Model
+	public class ModelXml : IHomunculusModel
 	{
 		// All data is stored in a single DataSet.
 		private DataSet ChallengeRuns;
 		private string DatabaseFilename;
 
-		public Model()
+		public ModelXml()
 		{
 			System.Diagnostics.Debug.WriteLine("Enter Model constructor");
 
@@ -453,11 +453,5 @@ namespace Homunculus_Model
 			}
 			return runs;
 		}
-	}
-
-	public class Split
-	{
-		public UInt32 Handle = 0;
-		public string Name;
 	}
 }

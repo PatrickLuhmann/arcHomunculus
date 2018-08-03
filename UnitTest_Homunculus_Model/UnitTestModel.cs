@@ -9,7 +9,7 @@ namespace UnitTest_Homunculus_Model
 	[TestClass]
 	public class UnitTestModel
 	{
-		Model TestModel;
+		ModelXml TestModel;
 		static List<string> SplitsBefore = new List<string>();
 		string DefaultFilename = "homtestdefault.xml";
 
@@ -26,7 +26,7 @@ namespace UnitTest_Homunculus_Model
 		public void Init()
 		{
 			// Start with a clean Model and database.
-			TestModel = new Model();
+			TestModel = new ModelXml();
 			if (System.IO.File.Exists(DefaultFilename))
 				System.IO.File.Delete(DefaultFilename);
 			TestModel.CreateDatabase(DefaultFilename);
@@ -126,7 +126,7 @@ namespace UnitTest_Homunculus_Model
 			TestModel.LoadDatabase(DefaultFilename);
 
 			// A new Model object should be able to do the same thing.
-			Model NewTestModel = new Model();
+			ModelXml NewTestModel = new ModelXml();
 			NewTestModel.LoadDatabase(DefaultFilename);
 			NewTestModel.LoadDatabase(DefaultFilename);
 
@@ -149,7 +149,7 @@ namespace UnitTest_Homunculus_Model
 			TestModel.CreateChallenge("challenge-ldb-3", SplitsBefore);
 
 			// Create a new Model instance.
-			Model NewTestModel = new Model();
+			ModelXml NewTestModel = new ModelXml();
 
 			// Load the existing database file into the new Model.
 			NewTestModel.LoadDatabase(DefaultFilename);
@@ -194,7 +194,7 @@ namespace UnitTest_Homunculus_Model
 		public void CreateChallenge_NoDatabaseLoaded()
 		{
 			// Use a new Model for this test.
-			Model newTestModel = new Model();
+			ModelXml newTestModel = new ModelXml();
 
 			newTestModel.CreateChallenge("new challenge", SplitsBefore);
 		}
