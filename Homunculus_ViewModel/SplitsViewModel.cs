@@ -242,7 +242,6 @@ namespace Homunculus_ViewModel
 		// Break the tight coupling between the app and the data store.
 		// This allows for unit testing via a mock.
 		private IUserSettings UserSettings;
-		private StandardUserSettings MySettings;
 
 		private int CurrentSplit = 0;
 		private Model Challenges;
@@ -253,8 +252,7 @@ namespace Homunculus_ViewModel
 			// interface object, just make our own.
 			if (Settings == null)
 			{
-				MySettings = new StandardUserSettings();
-				UserSettings = MySettings;
+				UserSettings = new StandardUserSettings();
 			}
 			else
 				UserSettings = Settings;
