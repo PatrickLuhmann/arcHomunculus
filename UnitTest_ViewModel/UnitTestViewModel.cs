@@ -206,5 +206,58 @@ namespace UnitTest_ViewModel
 			// There is no current challenge.
 			Assert.AreEqual("", TestViewModel.CurrentChallenge);
 		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.ArgumentNullException))]
+		public void DeleteChallenge_NullChallengeName()
+		{
+			TestViewModel.DeleteChallenge(null);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.ArgumentException))]
+		public void DeleteChallenge_UnknownChallengeName()
+		{
+			TestViewModel.DeleteChallenge("this challenge does not exist");
+		}
+
+		[TestMethod]
+		public void DeleteChallenge_Current_NotOnlyOne()
+		{
+			string nameChallengeToDelete = "challenge to be deleted";
+			string nameNewestChallenge = "this is the newest challenge";
+
+			// Create several challenges.
+			List<string> splits = new List<string>();
+			splits.Add("split 1");
+			splits.Add("split 2");
+			splits.Add("split 3");
+			splits.Add("split 4");
+			splits.Add("split 5");
+
+			TestViewModel.CreateChallenge("challenge 1", splits);
+			TestViewModel.CreateChallenge("challenge 2", splits);
+			TestViewModel.CreateChallenge(nameChallengeToDelete, splits);
+			// Make the newest challenge different so we can differentiate.
+			splits.Remove("split 3");
+			TestViewModel.CreateChallenge(nameNewestChallenge, splits);
+
+			int numChallengesCreated = TestViewModel.ChallengeList.Count;
+
+			// Set the challenge to be deleted as the current challenge.
+			TestViewModel.CurrentChallenge = nameChallengeToDelete;
+
+			// Delete the challenge.
+			TestViewModel.DeleteChallenge(nameChallengeToDelete);
+
+			Assert.AreEqual(numChallengesCreated - 1, TestViewModel.ChallengeList.Count);
+			Assert.AreEqual(nameNewestChallenge, TestViewModel.CurrentChallenge);
+			// Checking the count should be sufficient.
+			Assert.AreEqual(4, TestViewModel.SplitList.Count);
+			// Might not need this check. If the set accessor for CurrentChallenge has been
+			// fully validated, then we should be able to assume here that if CurrentChallenge
+			// has been changed correctly then all of the effects of that change have occurred.
+			mockSettings.Verify(us => us.SetUserSetting("LastUsedChallenge", nameNewestChallenge));
+		}
 	}
 }

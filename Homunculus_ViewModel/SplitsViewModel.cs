@@ -221,6 +221,31 @@ namespace Homunculus_ViewModel
 		}
 
 		/// <summary>
+		/// Delete the given challenge from the database.
+		/// </summary>
+		/// <param name="Name">The name of the challenge.</param>
+		public void DeleteChallenge(string Name)
+		{
+			if (Name == null)
+				throw new ArgumentNullException();
+
+			// Remove it from the database.
+			Challenges.DeleteChallenge(Name);
+
+			// Update the challenge list.
+			challengeList = Challenges.GetChallenges();
+
+			// Set a new current challenge.
+			if (challengeList.Count == 0)
+				CurrentChallenge = "";
+			else
+			{
+				// TODO: Can we assume that the last item in the list is the newest?
+				CurrentChallenge = challengeList.Last();
+			}
+		}
+
+		/// <summary>
 		/// NOTE: This might be deprecated, or at least delayed.
 		/// </summary>
 		/// <param name="selectedSplit"></param>
