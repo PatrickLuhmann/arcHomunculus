@@ -258,6 +258,10 @@ namespace UnitTest_ViewModel
 			// fully validated, then we should be able to assume here that if CurrentChallenge
 			// has been changed correctly then all of the effects of that change have occurred.
 			mockSettings.Verify(us => us.SetUserSetting("LastUsedChallenge", nameNewestChallenge));
+
+			// TODO: Is there a way to validate that the method under test called
+			// NotifyPropertyChanged() for the correct properties? Is that yet another
+			// thing that can/should be mocked?
 		}
 	}
 }

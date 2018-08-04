@@ -70,7 +70,10 @@
                       ItemsSource="{Binding ChallengeList}"
                       SelectionChanged="challengesListView_SelectionChanged">
             </ListView>
-            <Button Name="createChallengeButton" Click="createChallengeButton_Click" Margin="5,5,5,5" Content="{Binding CreateChallengeButtonText}"/>
+            <StackPanel Orientation="Horizontal">
+                <Button Name="createChallengeButton" Click="createChallengeButton_Click" Margin="5,5,5,5" Content="{Binding CreateChallengeButtonText}"/>
+                <Button Name="deleteChallengeButton" Click="deleteChallengeButton_Click" Margin="5">Delete Challenge</Button>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Window>

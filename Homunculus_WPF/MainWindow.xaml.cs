@@ -71,7 +71,24 @@ namespace Homunculus_WPF
 		private void challengesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			ListView lv = (sender as ListView);
-			((SplitsViewModel)DataContext).CurrentChallenge = lv.SelectedItem.ToString();
+			if (lv.SelectedItem != null)
+				((SplitsViewModel)DataContext).CurrentChallenge = lv.SelectedItem.ToString();
+		}
+
+		private void deleteChallengeButton_Click(object sender, RoutedEventArgs e)
+		{
+			// Get the challenge that is currently selected.
+			string challengeName = challengesListView.SelectedItem as string;
+
+			// Confirm that the user really wants to do this.
+			MessageBoxResult result = MessageBox.Show("Do you want to delete challenge " + challengeName,
+				"Confirm Delete Challenge", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+			if (result == MessageBoxResult.Yes)
+			{
+				// Invoke the Delete method on it.
+				(DataContext as SplitsViewModel).DeleteChallenge(challengeName);
+			}
 		}
 	}
 }

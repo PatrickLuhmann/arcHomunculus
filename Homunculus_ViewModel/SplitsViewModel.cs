@@ -243,6 +243,11 @@ namespace Homunculus_ViewModel
 				// TODO: Can we assume that the last item in the list is the newest?
 				CurrentChallenge = challengeList.Last();
 			}
+
+			// We changed some of our public properties.
+			NotifyPropertyChanged("ChallengeList");
+			NotifyPropertyChanged("CurrentChallenge");
+			NotifyPropertyChanged("SplitList");
 		}
 
 		/// <summary>
