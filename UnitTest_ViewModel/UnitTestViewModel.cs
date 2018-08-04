@@ -9,7 +9,7 @@ namespace UnitTest_ViewModel
 	[TestClass]
 	public class UnitTestViewModel
 	{
-		SplitsViewModel vm;
+		SplitsViewModel TestViewModel;
 		Mock<IUserSettings> mockSettings;
 
 		[TestInitialize]
@@ -28,67 +28,67 @@ namespace UnitTest_ViewModel
 			mockSettings.Setup(us => us.GetUserSetting("LastUsedChallenge"))
 				.Returns("");
 
-			vm = new SplitsViewModel(mockSettings.Object);
+			TestViewModel = new SplitsViewModel(mockSettings.Object);
 		}
 
 		[TestMethod]
 		public void Constructor()
 		{
 			// The split list will exist and it will be empty.
-			Assert.IsNotNull(vm.SplitList);
-			Assert.AreEqual(0, vm.SplitList.Count);
+			Assert.IsNotNull(TestViewModel.SplitList);
+			Assert.AreEqual(0, TestViewModel.SplitList.Count);
 
 			// The split list, text version will be empty.
-			Assert.AreEqual("", vm.SplitTextList);
+			Assert.AreEqual("", TestViewModel.SplitTextList);
 
 			// There is no current challenge.
-			Assert.AreEqual("", vm.CurrentChallenge);
+			Assert.AreEqual("", TestViewModel.CurrentChallenge);
 		}
 
 		[TestMethod]
 		public void SetSplits_Multiple()
 		{
 			string splits = "one\r\ntwo\r\nthree";
-			vm.SetSplits(splits);
-			Assert.AreEqual(3, vm.SplitList.Count);
-			Assert.AreEqual("one", vm.SplitList[0].SplitName);
-			Assert.AreEqual(0, vm.SplitList[0].CurrentValue);
-			Assert.AreEqual(0, vm.SplitList[0].DiffValue);
-			Assert.AreEqual(0, vm.SplitList[0].CurrentPbValue);
-			Assert.AreEqual("two", vm.SplitList[1].SplitName);
-			Assert.AreEqual(0, vm.SplitList[1].CurrentValue);
-			Assert.AreEqual(0, vm.SplitList[1].DiffValue);
-			Assert.AreEqual(0, vm.SplitList[1].CurrentPbValue);
-			Assert.AreEqual("three", vm.SplitList[2].SplitName);
-			Assert.AreEqual(0, vm.SplitList[2].CurrentValue);
-			Assert.AreEqual(0, vm.SplitList[2].DiffValue);
-			Assert.AreEqual(0, vm.SplitList[2].CurrentPbValue);
-			Assert.AreEqual("one\r\ntwo\r\nthree\r\n", vm.SplitTextList);
+			TestViewModel.SetSplits(splits);
+			Assert.AreEqual(3, TestViewModel.SplitList.Count);
+			Assert.AreEqual("one", TestViewModel.SplitList[0].SplitName);
+			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[0].DiffValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentPbValue);
+			Assert.AreEqual("two", TestViewModel.SplitList[1].SplitName);
+			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[1].DiffValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentPbValue);
+			Assert.AreEqual("three", TestViewModel.SplitList[2].SplitName);
+			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[2].DiffValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentPbValue);
+			Assert.AreEqual("one\r\ntwo\r\nthree\r\n", TestViewModel.SplitTextList);
 
 			splits = "";
-			vm.SetSplits(splits);
-			Assert.AreEqual(0, vm.SplitList.Count);
-			Assert.AreEqual("", vm.SplitTextList);
+			TestViewModel.SetSplits(splits);
+			Assert.AreEqual(0, TestViewModel.SplitList.Count);
+			Assert.AreEqual("", TestViewModel.SplitTextList);
 
 			splits = "four\r\nfive\r\nthis is the sixth\r\nand seventh";
-			vm.SetSplits(splits);
-			Assert.AreEqual(4, vm.SplitList.Count);
-			Assert.AreEqual("four\r\nfive\r\nthis is the sixth\r\nand seventh\r\n", vm.SplitTextList);
+			TestViewModel.SetSplits(splits);
+			Assert.AreEqual(4, TestViewModel.SplitList.Count);
+			Assert.AreEqual("four\r\nfive\r\nthis is the sixth\r\nand seventh\r\n", TestViewModel.SplitTextList);
 
 			splits = "dude\r\nclean\r\n\r\nthese splits\r\n \r\nup\r\n\r\n\r\n";
-			vm.SetSplits(splits);
-			Assert.AreEqual(4, vm.SplitList.Count);
-			Assert.AreEqual("dude\r\nclean\r\nthese splits\r\nup\r\n", vm.SplitTextList);
+			TestViewModel.SetSplits(splits);
+			Assert.AreEqual(4, TestViewModel.SplitList.Count);
+			Assert.AreEqual("dude\r\nclean\r\nthese splits\r\nup\r\n", TestViewModel.SplitTextList);
 
 			splits = "  leading whitespace\r\ntrailing whitespace   \r\n both at once  ";
-			vm.SetSplits(splits);
-			Assert.AreEqual(3, vm.SplitList.Count);
-			Assert.AreEqual("leading whitespace\r\ntrailing whitespace\r\nboth at once\r\n", vm.SplitTextList);
+			TestViewModel.SetSplits(splits);
+			Assert.AreEqual(3, TestViewModel.SplitList.Count);
+			Assert.AreEqual("leading whitespace\r\ntrailing whitespace\r\nboth at once\r\n", TestViewModel.SplitTextList);
 
 			splits = "\t  what\r\nabout\t\r\n \t tabs? \t \t  ";
-			vm.SetSplits(splits);
-			Assert.AreEqual(3, vm.SplitList.Count);
-			Assert.AreEqual("what\r\nabout\r\ntabs?\r\n", vm.SplitTextList);
+			TestViewModel.SetSplits(splits);
+			Assert.AreEqual(3, TestViewModel.SplitList.Count);
+			Assert.AreEqual("what\r\nabout\r\ntabs?\r\n", TestViewModel.SplitTextList);
 		}
 
 		[TestMethod]
@@ -97,7 +97,7 @@ namespace UnitTest_ViewModel
 		{
 			// It is not allowed to proc success or failure when there are
 			// no splits defined.
-			vm.SuccessProc();
+			TestViewModel.SuccessProc();
 		}
 
 		[TestMethod]
@@ -106,7 +106,7 @@ namespace UnitTest_ViewModel
 		{
 			// It is not allowed to proc success or failure when there are
 			// no splits defined.
-			vm.FailureProc();
+			TestViewModel.FailureProc();
 		}
 
 		[TestMethod]
@@ -114,27 +114,27 @@ namespace UnitTest_ViewModel
 		{
 			// Create several splits.
 			string splits = "one\r\ntwo\r\nthree";
-			vm.SetSplits(splits);
+			TestViewModel.SetSplits(splits);
 
 			// Hit the first split with a couple of failures.
-			vm.FailureProc();
-			vm.FailureProc();
-			Assert.AreEqual(2, vm.SplitList[0].CurrentValue);
-			Assert.AreEqual(0, vm.SplitList[1].CurrentValue);
-			Assert.AreEqual(0, vm.SplitList[2].CurrentValue);
+			TestViewModel.FailureProc();
+			TestViewModel.FailureProc();
+			Assert.AreEqual(2, TestViewModel.SplitList[0].CurrentValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentValue);
 
 			// Succeed the second split.
-			vm.SuccessProc();
-			vm.SuccessProc();
-			Assert.AreEqual(2, vm.SplitList[0].CurrentValue);
-			Assert.AreEqual(0, vm.SplitList[1].CurrentValue);
-			Assert.AreEqual(0, vm.SplitList[2].CurrentValue);
+			TestViewModel.SuccessProc();
+			TestViewModel.SuccessProc();
+			Assert.AreEqual(2, TestViewModel.SplitList[0].CurrentValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentValue);
 
 			// Fail the third split once.
-			vm.FailureProc();
-			Assert.AreEqual(2, vm.SplitList[0].CurrentValue);
-			Assert.AreEqual(0, vm.SplitList[1].CurrentValue);
-			Assert.AreEqual(1, vm.SplitList[2].CurrentValue);
+			TestViewModel.FailureProc();
+			Assert.AreEqual(2, TestViewModel.SplitList[0].CurrentValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentValue);
+			Assert.AreEqual(1, TestViewModel.SplitList[2].CurrentValue);
 		}
 
 		[TestMethod]
@@ -143,14 +143,14 @@ namespace UnitTest_ViewModel
 		{
 			List<string> splits = new List<string>();
 			splits.Add("split 1");
-			vm.CreateChallenge(null, splits);
+			TestViewModel.CreateChallenge(null, splits);
 		}
 
 		[TestMethod]
 		[ExpectedException(typeof(System.ArgumentNullException))]
 		public void CreateChallenge_NullSplitList()
 		{
-			vm.CreateChallenge("new challenge", null);
+			TestViewModel.CreateChallenge("new challenge", null);
 		}
 
 		[TestMethod]
@@ -158,7 +158,7 @@ namespace UnitTest_ViewModel
 		public void CreateChallenge_EmptySplitList()
 		{
 			List<string> splits = new List<string>();
-			vm.CreateChallenge("new challenge", splits);
+			TestViewModel.CreateChallenge("new challenge", splits);
 		}
 
 		[TestMethod]
@@ -171,11 +171,11 @@ namespace UnitTest_ViewModel
 			splits.Add("split 4");
 			splits.Add("split 5");
 
-			vm.CreateChallenge("new challenge", splits);
+			TestViewModel.CreateChallenge("new challenge", splits);
 
-			Assert.AreEqual(1, vm.ChallengeList.Count);
-			Assert.AreEqual("new challenge", vm.ChallengeList[0]);
-			Assert.AreEqual("new challenge", vm.CurrentChallenge);
+			Assert.AreEqual(1, TestViewModel.ChallengeList.Count);
+			Assert.AreEqual("new challenge", TestViewModel.ChallengeList[0]);
+			Assert.AreEqual("new challenge", TestViewModel.CurrentChallenge);
 			mockSettings.Verify(us => us.SetUserSetting("LastUsedChallenge", "new challenge"));
 		}
 
@@ -197,14 +197,14 @@ namespace UnitTest_ViewModel
 			SplitsViewModel mySvm = new SplitsViewModel(mockSettings.Object);
 
 			// The split list will exist and it will be empty.
-			Assert.IsNotNull(vm.SplitList);
-			Assert.AreEqual(0, vm.SplitList.Count);
+			Assert.IsNotNull(TestViewModel.SplitList);
+			Assert.AreEqual(0, TestViewModel.SplitList.Count);
 
 			// The split list, text version will be empty.
-			Assert.AreEqual("", vm.SplitTextList);
+			Assert.AreEqual("", TestViewModel.SplitTextList);
 
 			// There is no current challenge.
-			Assert.AreEqual("", vm.CurrentChallenge);
+			Assert.AreEqual("", TestViewModel.CurrentChallenge);
 		}
 	}
 }
