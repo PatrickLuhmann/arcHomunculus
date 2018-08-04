@@ -28,7 +28,7 @@ namespace UnitTest_ViewModel
 			mockSettings.Setup(us => us.GetUserSetting("LastUsedChallenge"))
 				.Returns("");
 
-			TestViewModel = new SplitsViewModel(mockSettings.Object);
+			TestViewModel = new SplitsViewModel(mockSettings.Object, null);
 		}
 
 		[TestMethod]
@@ -194,7 +194,7 @@ namespace UnitTest_ViewModel
 			if (System.IO.File.Exists("homunculus.xml"))
 				System.IO.File.Delete("homunculus.xml");
 
-			SplitsViewModel mySvm = new SplitsViewModel(mockSettings.Object);
+			SplitsViewModel mySvm = new SplitsViewModel(mockSettings.Object, null);
 
 			// The split list will exist and it will be empty.
 			Assert.IsNotNull(TestViewModel.SplitList);

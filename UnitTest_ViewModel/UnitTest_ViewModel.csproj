@@ -68,6 +68,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Homunculus_Model\Homunculus_Model.csproj">
+      <Project>{B6E532E0-F8C3-430C-B66F-AEB89BB6463D}</Project>
+      <Name>Homunculus_Model</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Homunculus_ViewModel\Homunculus_ViewModel.csproj">
       <Project>{3e4b0ba3-c073-4e8b-be50-5e0bd784c718}</Project>
       <Name>Homunculus_ViewModel</Name>

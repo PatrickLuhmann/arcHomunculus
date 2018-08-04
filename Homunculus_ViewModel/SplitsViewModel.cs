@@ -239,14 +239,14 @@ namespace Homunculus_ViewModel
 		}
 		#endregion
 
-		// Break the tight coupling between the app and the data store.
+		// Break the tight coupling between the app and the data stores.
 		// This allows for unit testing via a mock.
 		private IUserSettings UserSettings;
+		private IHomunculusModel Challenges;
 
 		private int CurrentSplit = 0;
-		private ModelXml Challenges;
 
-		public SplitsViewModel(IUserSettings Settings)
+		public SplitsViewModel(IUserSettings Settings, IHomunculusModel Model)
 		{
 			// If the caller is not supplying a user settings
 			// interface object, just make our own.
@@ -257,15 +257,23 @@ namespace Homunculus_ViewModel
 			else
 				UserSettings = Settings;
 
-			// Create our Model and load it from the database file.
-			Challenges = new ModelXml();
-			if (System.IO.File.Exists("homunculus.xml"))
+			// If the caller is not supplying a model object,
+			// just make our own.
+			if (Model == null)
 			{
-				Challenges.LoadDatabase("homunculus.xml");
+				Challenges = new ModelXml();
+				if (System.IO.File.Exists("homunculus.xml"))
+				{
+					Challenges.LoadDatabase("homunculus.xml");
+				}
+				else
+				{
+					Challenges.CreateDatabase("homunculus.xml");
+				}
 			}
 			else
 			{
-				Challenges.CreateDatabase("homunculus.xml");
+				Challenges = Model;
 			}
 
 			// Get the challenges and set one to current, if available.
@@ -275,7 +283,7 @@ namespace Homunculus_ViewModel
 			SuccessButtonText = "Success";
 		}
 
-		public SplitsViewModel() : this(null)
+		public SplitsViewModel() : this(null, null)
 		{
 		}
 
