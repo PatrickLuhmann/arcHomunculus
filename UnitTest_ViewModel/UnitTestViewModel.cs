@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Homunculus_ViewModel;
 using System.Collections.Generic;
 using Moq;
+using Homunculus_Model;
 
 namespace UnitTest_ViewModel
 {
@@ -11,15 +12,11 @@ namespace UnitTest_ViewModel
 	{
 		SplitsViewModel TestViewModel;
 		Mock<IUserSettings> mockSettings;
+		Mock<IHomunculusModel> mockModel;
 
 		[TestInitialize]
 		public void Setup()
 		{
-			// All tests start without a database, simulating the first
-			// time the app is launched.
-			if (System.IO.File.Exists("homunculus.xml"))
-				System.IO.File.Delete("homunculus.xml");
-
 			// Mock the user settings database because we don't want the
 			// unit tests using the real thing, which will screw up what
 			// the user might be doing on their own.
@@ -28,7 +25,13 @@ namespace UnitTest_ViewModel
 			mockSettings.Setup(us => us.GetUserSetting("LastUsedChallenge"))
 				.Returns("");
 
-			TestViewModel = new SplitsViewModel(mockSettings.Object, null);
+			// Mock the model so that we are not dependent on a database.
+			mockModel = new Mock<IHomunculusModel>();
+			// With no database, the challenge list will be empty.
+			mockModel.Setup(m => m.GetChallenges())
+				.Returns(new List<string>());
+
+			TestViewModel = new SplitsViewModel(mockSettings.Object, mockModel.Object);
 		}
 
 		[TestMethod]
@@ -164,6 +167,7 @@ namespace UnitTest_ViewModel
 		[TestMethod]
 		public void CreateChallenge_Basic()
 		{
+			string challengeName = "new challenge";
 			List<string> splits = new List<string>();
 			splits.Add("split 1");
 			splits.Add("split 2");
@@ -171,12 +175,55 @@ namespace UnitTest_ViewModel
 			splits.Add("split 4");
 			splits.Add("split 5");
 
-			TestViewModel.CreateChallenge("new challenge", splits);
+			// Setup the model mock to return the appropriate list.
+			List<string> mockModelChallengeList = new List<string>();
+			mockModelChallengeList.Add(challengeName);
+			mockModel.Setup(m => m.GetChallenges())
+				.Returns(mockModelChallengeList);
 
+			// The splits are irrelevent in this test but an object must
+			// be provided because CurrentChallenge looks at it.
+			mockModel.Setup(m => m.GetSplits(challengeName))
+				.Returns(new List<Split>());
+
+			// ACT
+			TestViewModel.CreateChallenge(challengeName, splits);
+
+			// Was the Model informed correctly?
+			mockModel.Verify(m => m.CreateChallenge(challengeName, splits));
+
+			// Has ChallengeList been updated correctly?
 			Assert.AreEqual(1, TestViewModel.ChallengeList.Count);
-			Assert.AreEqual("new challenge", TestViewModel.ChallengeList[0]);
-			Assert.AreEqual("new challenge", TestViewModel.CurrentChallenge);
-			mockSettings.Verify(us => us.SetUserSetting("LastUsedChallenge", "new challenge"));
+			Assert.AreEqual(challengeName, TestViewModel.ChallengeList[0]);
+
+			// Has CurrentChallenge been set correctly?
+			Assert.AreEqual(challengeName, TestViewModel.CurrentChallenge);
+
+			// Has SplitList been updated correctly?
+			Assert.AreEqual(5, TestViewModel.SplitList.Count);
+			Assert.AreEqual("split 1", TestViewModel.SplitList[0].SplitName);
+			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[0].DiffValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentPbValue);
+			Assert.AreEqual("split 2", TestViewModel.SplitList[1].SplitName);
+			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[1].DiffValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentPbValue);
+			Assert.AreEqual("split 3", TestViewModel.SplitList[2].SplitName);
+			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[2].DiffValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentPbValue);
+			Assert.AreEqual("split 4", TestViewModel.SplitList[3].SplitName);
+			Assert.AreEqual(0, TestViewModel.SplitList[3].CurrentValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[3].DiffValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[3].CurrentPbValue);
+			Assert.AreEqual("split 5", TestViewModel.SplitList[4].SplitName);
+			Assert.AreEqual(0, TestViewModel.SplitList[4].CurrentValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[4].DiffValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[4].CurrentPbValue);
+
+			// Has the user setting LastUsedChallenge been updated correctly?
+			mockSettings.Verify(us => us.SetUserSetting("LastUsedChallenge", challengeName));
 		}
 
 		[TestMethod]
@@ -211,57 +258,117 @@ namespace UnitTest_ViewModel
 		[ExpectedException(typeof(System.ArgumentNullException))]
 		public void DeleteChallenge_NullChallengeName()
 		{
+			// ARRANGE
+			// If the ViewModel calls DeleteChallenge directly (as opposed
+			// to checking the parameter itself) then an exception will be thrown.
+			mockModel.Setup(m => m.DeleteChallenge(null))
+				.Throws<ArgumentNullException>();
+
+			// ACT
 			TestViewModel.DeleteChallenge(null);
+
+			// ASSERT
+			// The exception is the only thing we are interested in.
 		}
 
 		[TestMethod]
 		[ExpectedException(typeof(System.ArgumentException))]
 		public void DeleteChallenge_UnknownChallengeName()
 		{
-			TestViewModel.DeleteChallenge("this challenge does not exist");
+			// ARRANGE
+			string challengeName = "this challenge does not exist";
+
+			// If the ViewModel calls DeleteChallenge directly (as opposed
+			// to manually searching the list returned by GetChallenges)
+			// then an exception will be thrown.
+			mockModel.Setup(m => m.DeleteChallenge(challengeName))
+				.Throws<ArgumentException>();
+
+			// ACT
+			TestViewModel.DeleteChallenge(challengeName);
+
+			// ASSERT
+			// The exception is the only thing we are interested in.
 		}
 
 		[TestMethod]
 		public void DeleteChallenge_Current_NotOnlyOne()
 		{
+			//ARRANGE
 			string nameChallengeToDelete = "challenge to be deleted";
 			string nameNewestChallenge = "this is the newest challenge";
 
-			// Create several challenges.
-			List<string> splits = new List<string>();
-			splits.Add("split 1");
-			splits.Add("split 2");
-			splits.Add("split 3");
-			splits.Add("split 4");
-			splits.Add("split 5");
+			// Provide the challenge list, after the deletion. This assumes
+			// that the MUT doesn't call GetChallenges at the beginning to
+			// refresh its list or something. This feels like having too
+			// much implementation knowledge, but on the other hand we want
+			// the MUT to be efficient.
+			List<string> afterChallengeList = new List<string>();
+			afterChallengeList.Add("old 1");
+			afterChallengeList.Add("old 2");
+			afterChallengeList.Add("old 3");
+			afterChallengeList.Add(nameNewestChallenge);
+			mockModel.Setup(m => m.GetChallenges())
+				.Returns(afterChallengeList);
 
-			TestViewModel.CreateChallenge("challenge 1", splits);
-			TestViewModel.CreateChallenge("challenge 2", splits);
-			TestViewModel.CreateChallenge(nameChallengeToDelete, splits);
-			// Make the newest challenge different so we can differentiate.
-			splits.Remove("split 3");
-			TestViewModel.CreateChallenge(nameNewestChallenge, splits);
+			// The splits are irrelevent in this test but an object must
+			// be provided because CurrentChallenge looks at it.
+			mockModel.Setup(m => m.GetSplits(It.IsAny<string>()))
+				.Returns(new List<Split>());
 
-			int numChallengesCreated = TestViewModel.ChallengeList.Count;
-
-			// Set the challenge to be deleted as the current challenge.
-			TestViewModel.CurrentChallenge = nameChallengeToDelete;
-
+			// ACT
 			// Delete the challenge.
 			TestViewModel.DeleteChallenge(nameChallengeToDelete);
 
-			Assert.AreEqual(numChallengesCreated - 1, TestViewModel.ChallengeList.Count);
-			Assert.AreEqual(nameNewestChallenge, TestViewModel.CurrentChallenge);
-			// Checking the count should be sufficient.
-			Assert.AreEqual(4, TestViewModel.SplitList.Count);
-			// Might not need this check. If the set accessor for CurrentChallenge has been
-			// fully validated, then we should be able to assume here that if CurrentChallenge
-			// has been changed correctly then all of the effects of that change have occurred.
-			mockSettings.Verify(us => us.SetUserSetting("LastUsedChallenge", nameNewestChallenge));
+			// ASSERT
+			// The ViewModel must call DeleteChallenge with the proper name.
+			mockModel.Verify(m => m.DeleteChallenge(nameChallengeToDelete));
 
-			// TODO: Is there a way to validate that the method under test called
-			// NotifyPropertyChanged() for the correct properties? Is that yet another
-			// thing that can/should be mocked?
+			// Verify it set CurrentChallenge to be the last one in the list.
+			Assert.AreEqual(nameNewestChallenge, TestViewModel.CurrentChallenge);
+			Assert.AreEqual(afterChallengeList.Count, TestViewModel.ChallengeList.Count);
+
+			// At this point we know that the MUT invoked CurrentChallenge with the
+			// correct challenge name. Because we have unit tests specifically for
+			// the set accessor for CurrentChallenge, we do not need to do any additional
+			// check here (e.g. for the split list).
+		}
+		[TestMethod]
+		public void DeleteChallenge_OnlyOne()
+		{
+			//ARRANGE
+			string nameChallengeToDelete = "challenge to be deleted";
+
+			// Provide the challenge list, after the deletion. This assumes
+			// that the MUT doesn't call GetChallenges at the beginning to
+			// refresh its list or something. This feels like having too
+			// much implementation knowledge, but on the other hand we want
+			// the MUT to be efficient.
+			List<string> afterChallengeList = new List<string>();
+			mockModel.Setup(m => m.GetChallenges())
+				.Returns(afterChallengeList);
+
+			// The splits are irrelevent in this test but an object must
+			// be provided because CurrentChallenge looks at it.
+			mockModel.Setup(m => m.GetSplits(It.IsAny<string>()))
+				.Returns(new List<Split>());
+
+			// ACT
+			// Delete the challenge.
+			TestViewModel.DeleteChallenge(nameChallengeToDelete);
+
+			// ASSERT
+			// The ViewModel must call DeleteChallenge with the proper name.
+			mockModel.Verify(m => m.DeleteChallenge(nameChallengeToDelete));
+
+			// Verify it set CurrentChallenge to be the empty string.
+			Assert.AreEqual("", TestViewModel.CurrentChallenge);
+			Assert.AreEqual(afterChallengeList.Count, TestViewModel.ChallengeList.Count);
+
+			// At this point we know that the MUT invoked CurrentChallenge with the
+			// correct challenge name. Because we have unit tests specifically for
+			// the set accessor for CurrentChallenge, we do not need to do any additional
+			// check here (e.g. for the split list).
 		}
 	}
 }

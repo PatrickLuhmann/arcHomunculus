@@ -246,6 +246,8 @@ namespace Homunculus_ViewModel
 
 			// We changed some of our public properties.
 			NotifyPropertyChanged("ChallengeList");
+			// TODO: These are redundant to what was done in CurrentChallenge.set
+			// so they can probably be deleted.
 			NotifyPropertyChanged("CurrentChallenge");
 			NotifyPropertyChanged("SplitList");
 		}
@@ -267,14 +269,6 @@ namespace Homunculus_ViewModel
 
 			// TODO: What do we need to do when the app is closing?
 		}
-		#endregion
-
-		// Break the tight coupling between the app and the data stores.
-		// This allows for unit testing via a mock.
-		private IUserSettings UserSettings;
-		private IHomunculusModel Challenges;
-
-		private int CurrentSplit = 0;
 
 		public SplitsViewModel(IUserSettings Settings, IHomunculusModel Model)
 		{
@@ -316,6 +310,17 @@ namespace Homunculus_ViewModel
 		public SplitsViewModel() : this(null, null)
 		{
 		}
+		#endregion
+
+		#region Private data members
+		// Break the tight coupling between the app and the data stores.
+		// This allows for unit testing via a mock.
+		private IUserSettings UserSettings;
+		private IHomunculusModel Challenges;
+
+		private int CurrentSplit = 0;
+		private bool RunInProgress = false;
+		#endregion
 
 		public event PropertyChangedEventHandler PropertyChanged;
 		private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
