@@ -49,52 +49,6 @@ namespace UnitTest_ViewModel
 		}
 
 		[TestMethod]
-		public void SetSplits_Multiple()
-		{
-			string splits = "one\r\ntwo\r\nthree";
-			TestViewModel.SetSplits(splits);
-			Assert.AreEqual(3, TestViewModel.SplitList.Count);
-			Assert.AreEqual("one", TestViewModel.SplitList[0].SplitName);
-			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[0].DiffValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentPbValue);
-			Assert.AreEqual("two", TestViewModel.SplitList[1].SplitName);
-			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[1].DiffValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentPbValue);
-			Assert.AreEqual("three", TestViewModel.SplitList[2].SplitName);
-			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[2].DiffValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentPbValue);
-			Assert.AreEqual("one\r\ntwo\r\nthree\r\n", TestViewModel.SplitTextList);
-
-			splits = "";
-			TestViewModel.SetSplits(splits);
-			Assert.AreEqual(0, TestViewModel.SplitList.Count);
-			Assert.AreEqual("", TestViewModel.SplitTextList);
-
-			splits = "four\r\nfive\r\nthis is the sixth\r\nand seventh";
-			TestViewModel.SetSplits(splits);
-			Assert.AreEqual(4, TestViewModel.SplitList.Count);
-			Assert.AreEqual("four\r\nfive\r\nthis is the sixth\r\nand seventh\r\n", TestViewModel.SplitTextList);
-
-			splits = "dude\r\nclean\r\n\r\nthese splits\r\n \r\nup\r\n\r\n\r\n";
-			TestViewModel.SetSplits(splits);
-			Assert.AreEqual(4, TestViewModel.SplitList.Count);
-			Assert.AreEqual("dude\r\nclean\r\nthese splits\r\nup\r\n", TestViewModel.SplitTextList);
-
-			splits = "  leading whitespace\r\ntrailing whitespace   \r\n both at once  ";
-			TestViewModel.SetSplits(splits);
-			Assert.AreEqual(3, TestViewModel.SplitList.Count);
-			Assert.AreEqual("leading whitespace\r\ntrailing whitespace\r\nboth at once\r\n", TestViewModel.SplitTextList);
-
-			splits = "\t  what\r\nabout\t\r\n \t tabs? \t \t  ";
-			TestViewModel.SetSplits(splits);
-			Assert.AreEqual(3, TestViewModel.SplitList.Count);
-			Assert.AreEqual("what\r\nabout\r\ntabs?\r\n", TestViewModel.SplitTextList);
-		}
-
-		[TestMethod]
 		[ExpectedException(typeof(System.ArgumentOutOfRangeException))]
 		public void SuccessProc_NoSplits()
 		{
@@ -113,82 +67,68 @@ namespace UnitTest_ViewModel
 		}
 
 		[TestMethod]
-		public void MixedSuccessAndFailureOnSplits()
-		{
-			// Create several splits.
-			string splits = "one\r\ntwo\r\nthree";
-			TestViewModel.SetSplits(splits);
-
-			// Hit the first split with a couple of failures.
-			TestViewModel.FailureProc();
-			TestViewModel.FailureProc();
-			Assert.AreEqual(2, TestViewModel.SplitList[0].CurrentValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentValue);
-
-			// Succeed the second split.
-			TestViewModel.SuccessProc();
-			TestViewModel.SuccessProc();
-			Assert.AreEqual(2, TestViewModel.SplitList[0].CurrentValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentValue);
-
-			// Fail the third split once.
-			TestViewModel.FailureProc();
-			Assert.AreEqual(2, TestViewModel.SplitList[0].CurrentValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentValue);
-			Assert.AreEqual(1, TestViewModel.SplitList[2].CurrentValue);
-		}
-
-		[TestMethod]
 		[ExpectedException(typeof(System.ArgumentNullException))]
 		public void CreateChallenge_NullChallengeName()
 		{
-			List<string> splits = new List<string>();
-			splits.Add("split 1");
-			TestViewModel.CreateChallenge(null, splits);
+			// ACT
+			TestViewModel.CreateChallenge(null, new List<string>());
+
+			// ASSERT - expect exception.
 		}
 
 		[TestMethod]
 		[ExpectedException(typeof(System.ArgumentNullException))]
 		public void CreateChallenge_NullSplitList()
 		{
+			// ACT
 			TestViewModel.CreateChallenge("new challenge", null);
+
+			// ASSERT - expect exception.
 		}
 
 		[TestMethod]
 		[ExpectedException(typeof(System.ArgumentException))]
 		public void CreateChallenge_EmptySplitList()
 		{
-			List<string> splits = new List<string>();
-			TestViewModel.CreateChallenge("new challenge", splits);
+			// ACT
+			TestViewModel.CreateChallenge("new challenge", new List<string>());
+
+			// ASSERT - expect exception.
 		}
 
 		[TestMethod]
 		public void CreateChallenge_Basic()
 		{
+			// ARRANGE
 			string challengeName = "new challenge";
-			List<string> splits = new List<string>();
-			splits.Add("split 1");
-			splits.Add("split 2");
-			splits.Add("split 3");
-			splits.Add("split 4");
-			splits.Add("split 5");
+			List<string> splits = new List<string>
+			{
+				"split 1",
+				"split 2",
+				"split 3",
+				"split 4",
+				"split 5"
+			};
 
 			// Setup the model mock to return the appropriate list.
-			List<string> mockModelChallengeList = new List<string>();
-			mockModelChallengeList.Add(challengeName);
+			List<string> mockModelChallengeList = new List<string> { challengeName };
 			mockModel.Setup(m => m.GetChallenges())
 				.Returns(mockModelChallengeList);
 
-			// The splits are irrelevent in this test but an object must
-			// be provided because CurrentChallenge looks at it.
+			// Prepare the list of Split objects that the mock Model
+			// will return during CreateChallenge().
+			List<Split> modelSplits = new List<Split>();
+			foreach (var s in splits)
+			{
+				modelSplits.Add(new Split { Handle = 0, Name = s });
+			}
 			mockModel.Setup(m => m.GetSplits(challengeName))
-				.Returns(new List<Split>());
+				.Returns(modelSplits);
 
 			// ACT
 			TestViewModel.CreateChallenge(challengeName, splits);
 
+			// ASSERT
 			// Was the Model informed correctly?
 			mockModel.Verify(m => m.CreateChallenge(challengeName, splits));
 
@@ -203,52 +143,102 @@ namespace UnitTest_ViewModel
 			Assert.AreEqual(5, TestViewModel.SplitList.Count);
 			Assert.AreEqual("split 1", TestViewModel.SplitList[0].SplitName);
 			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[0].DiffValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentPbValue);
+			Assert.AreEqual(5, TestViewModel.SplitList[0].DiffValue);
+			Assert.AreEqual(7, TestViewModel.SplitList[0].CurrentPbValue);
 			Assert.AreEqual("split 2", TestViewModel.SplitList[1].SplitName);
 			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[1].DiffValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentPbValue);
+			Assert.AreEqual(5, TestViewModel.SplitList[1].DiffValue);
+			Assert.AreEqual(7, TestViewModel.SplitList[1].CurrentPbValue);
 			Assert.AreEqual("split 3", TestViewModel.SplitList[2].SplitName);
 			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[2].DiffValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentPbValue);
+			Assert.AreEqual(5, TestViewModel.SplitList[2].DiffValue);
+			Assert.AreEqual(7, TestViewModel.SplitList[2].CurrentPbValue);
 			Assert.AreEqual("split 4", TestViewModel.SplitList[3].SplitName);
 			Assert.AreEqual(0, TestViewModel.SplitList[3].CurrentValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[3].DiffValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[3].CurrentPbValue);
+			Assert.AreEqual(5, TestViewModel.SplitList[3].DiffValue);
+			Assert.AreEqual(7, TestViewModel.SplitList[3].CurrentPbValue);
 			Assert.AreEqual("split 5", TestViewModel.SplitList[4].SplitName);
 			Assert.AreEqual(0, TestViewModel.SplitList[4].CurrentValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[4].DiffValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[4].CurrentPbValue);
+			Assert.AreEqual(5, TestViewModel.SplitList[4].DiffValue);
+			Assert.AreEqual(7, TestViewModel.SplitList[4].CurrentPbValue);
 
 			// Has the user setting LastUsedChallenge been updated correctly?
 			mockSettings.Verify(us => us.SetUserSetting("LastUsedChallenge", challengeName));
 		}
 
 		[TestMethod]
+		public void CurrentChallenge_Set()
+		{
+			// ARRANGE
+			// Mock the existence of a database with several challenges in it.
+			string newCurrentName = "new current challenge";
+			List<string> challengeNames = new List<string>
+			{
+				"challenge 1",
+				"challenge 2",
+				"challenge 3",
+				newCurrentName,
+				"challenge 4"
+			};
+			mockModel.Setup(m => m.GetChallenges())
+				.Returns(challengeNames);
+
+			// Needs some splits for the mentioned challenges.
+			// The inital current challenge is not interesting.
+			mockModel.Setup(m => m.GetSplits("challenge 2"))
+				.Returns(new List<Split>());
+			// The new current challenge needs some splits so that we have
+			// something to validate.
+			List<Split> newSplits = new List<Split>
+			{
+				new Split { Handle = 0, Name = "split 1" },
+				new Split { Handle = 1, Name = "split 2" }
+			};
+			mockModel.Setup(m => m.GetSplits(newCurrentName))
+				.Returns(newSplits);
+
+			// Specify the last used challenge.
+			mockSettings.Setup(us => us.GetUserSetting("LastUsedChallenge"))
+				.Returns("challenge 2");
+
+			// For this we need our own object.
+			SplitsViewModel mySvm = new SplitsViewModel(mockSettings.Object, mockModel.Object);
+
+			// ACT
+			mySvm.CurrentChallenge = newCurrentName;
+
+			// ASSERT
+			Assert.AreEqual(newCurrentName, mySvm.CurrentChallenge);
+			Assert.AreEqual(2, mySvm.SplitList.Count);
+			SplitVM testSplit = new SplitVM
+			{
+				SplitName = "split 1",
+				CurrentValue = 0,
+				CurrentPbValue = 7,
+				DiffValue = 5
+			};
+			Assert.AreEqual<SplitVM>(testSplit, mySvm.SplitList[0]);
+			testSplit.SplitName = "split 2";
+			Assert.AreEqual<SplitVM>(testSplit, mySvm.SplitList[1]);
+			mockSettings.Verify(us => us.SetUserSetting("LastUsedChallenge", newCurrentName));
+		}
+
+		[TestMethod]
 		public void CorruptedUserSettingsFile()
 		{
-			// Need to use our own test objects for this one.
+			//ARRANGE
+			// Need to use our own test object for this one.
 			Mock<IUserSettings> myMockSettings = new Mock<IUserSettings>();
-
-			// Inject an invalid value for all setting names.
 			mockSettings.Setup(us => us.GetUserSetting(It.IsAny<string>()))
 				.Returns("always return an invalid value in this test");
 
-			// All tests start without a database, simulating the first
-			// time the app is launched.
-			if (System.IO.File.Exists("homunculus.xml"))
-				System.IO.File.Delete("homunculus.xml");
+			// ACT
+			SplitsViewModel mySvm = new SplitsViewModel(mockSettings.Object, mockModel.Object);
 
-			SplitsViewModel mySvm = new SplitsViewModel(mockSettings.Object, null);
-
+			// ASSERT
 			// The split list will exist and it will be empty.
 			Assert.IsNotNull(TestViewModel.SplitList);
 			Assert.AreEqual(0, TestViewModel.SplitList.Count);
-
-			// The split list, text version will be empty.
-			Assert.AreEqual("", TestViewModel.SplitTextList);
 
 			// There is no current challenge.
 			Assert.AreEqual("", TestViewModel.CurrentChallenge);

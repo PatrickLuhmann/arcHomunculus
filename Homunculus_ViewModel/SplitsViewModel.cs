@@ -81,6 +81,7 @@ namespace Homunculus_ViewModel
 		private ObservableCollection<SplitVM> splitList;
 		public ObservableCollection<SplitVM> SplitList { get { return splitList; } }
 
+		// TODO: Need to do something better than this.
 		private string splitTextList;
 		public string SplitTextList
 		{
@@ -101,9 +102,9 @@ namespace Homunculus_ViewModel
 		public string SuccessButtonText { get; set; }
 		public string FailureButtonText { get { return "Failure"; } }
 		public string CreateChallengeButtonText { get { return "Create Challenge"; } }
-		#endregion
+#endregion
 
-		#region View methods
+#region View methods
 		/// <summary>
 		/// Indicate success for the current split.
 		/// 
@@ -145,52 +146,6 @@ namespace Homunculus_ViewModel
 				splitList[CurrentSplit].CurrentPbValue - splitList[CurrentSplit].CurrentValue;
 		}
 
-		/// <summary>
-		/// Provide the list of splits as defined by the user.
-		/// </summary>
-		/// <param name="splits">List of splits, as newline-separated values.</param>
-		public void SetSplits(string splits)
-		{
-			if (null == splits)
-				splits = "";
-
-			// Grab the contents of the input.
-			splitTextList = splits;
-
-			// Extract the individual lines, ignoring empty lines.
-			string[] lines = splitTextList.Split(new string[] { Environment.NewLine },
-				StringSplitOptions.RemoveEmptyEntries);
-
-			// Make a new splitList.
-			splitList = new ObservableCollection<SplitVM>();
-			foreach (string s in lines)
-			{
-				// Only add non-empty strings
-				if (s.Trim() != "")
-					splitList.Add(new SplitVM
-					{
-						SplitName = s.Trim(),
-						CurrentValue = 0,
-						DiffValue = 0,
-						CurrentPbValue = 0
-					});
-			}
-
-			// For now, a new split list means starting over from the beginning.
-			CurrentSplit = 0;
-
-			// Manually trigger a UI update because the property is not us.
-			// TODO: Is there a better way to do this? I don't want to make the property
-			// writable, do I? If it was writable, wouldn't it trigger a UI update every
-			// time I did an Add in the loop above? That doesn't sound good.
-			//PropertyChanged(this, new PropertyChangedEventArgs("SplitList"));
-			// NOTE: I found a code sample that calls NotifyPropertyChanged(). It works
-			// in the GUI, but has a different result when this function is unit tested.
-			// I do not know the difference and I don't know which is better. This one
-			// doesn't create a new object so I am going to use it.
-			NotifyPropertyChanged("SplitList");
-		}
-
 		public void CreateChallenge(string Name, List<string> Splits)
 		{
 			if (Name == null || Splits == null)
@@ -201,18 +156,6 @@ namespace Homunculus_ViewModel
 			Challenges.CreateChallenge(Name, Splits);
 			challengeList = Challenges.GetChallenges();
 			CurrentChallenge = Name;
-
-			splitList = new ObservableCollection<SplitVM>();
-			foreach (string splitName in Splits)
-			{
-				splitList.Add(new SplitVM
-				{
-					SplitName = splitName,
-					CurrentValue = 0,
-					DiffValue = 0,
-					CurrentPbValue = 0
-				});
-			}
 
 			// We changed some of our public properties.
 			NotifyPropertyChanged("ChallengeList");
@@ -310,9 +253,9 @@ namespace Homunculus_ViewModel
 		public SplitsViewModel() : this(null, null)
 		{
 		}
-		#endregion
+#endregion
 
-		#region Private data members
+#region Private data members
 		// Break the tight coupling between the app and the data stores.
 		// This allows for unit testing via a mock.
 		private IUserSettings UserSettings;
@@ -320,7 +263,7 @@ namespace Homunculus_ViewModel
 
 		private int CurrentSplit = 0;
 		private bool RunInProgress = false;
-		#endregion
+#endregion
 
 		public event PropertyChangedEventHandler PropertyChanged;
 		private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
@@ -332,7 +275,7 @@ namespace Homunculus_ViewModel
 		}
 	}
 
-	public class SplitVM : INotifyPropertyChanged
+	public class SplitVM : INotifyPropertyChanged, IEquatable<SplitVM>
 	{
 		public string SplitName { get; set; }
 
@@ -373,6 +316,51 @@ namespace Homunculus_ViewModel
 				currentPbValue = value;
 				NotifyPropertyChanged();
 			}
+		}
+
+		public bool Equals(SplitVM other)
+		{
+			if (other == null)
+				return false;
+
+			return SplitName == other.SplitName &&
+				currentValue == other.currentValue &&
+				diffValue == other.diffValue &&
+				currentPbValue == other.currentPbValue;
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (obj == null)
+				return false;
+
+			SplitVM SplitVMObj = obj as SplitVM;
+			if (SplitVMObj == null)
+				return false;
+			else
+				return Equals(SplitVMObj);
+		}
+
+		// TODO: Do I need to do something better with this?
+		public override int GetHashCode()
+		{
+			return base.GetHashCode();
+		}
+
+		public static bool operator ==(SplitVM person1, SplitVM person2)
+		{
+			if (((object)person1) == null || ((object)person2) == null)
+				return Object.Equals(person1, person2);
+
+			return person1.Equals(person2);
+		}
+
+		public static bool operator !=(SplitVM person1, SplitVM person2)
+		{
+			if (((object)person1) == null || ((object)person2) == null)
+				return !Object.Equals(person1, person2);
+
+			return !(person1.Equals(person2));
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;
