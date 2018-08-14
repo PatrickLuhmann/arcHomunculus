@@ -360,5 +360,17 @@ namespace UnitTest_ViewModel
 			// the set accessor for CurrentChallenge, we do not need to do any additional
 			// check here (e.g. for the split list).
 		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.InvalidOperationException))]
+		public void StartNewRun_NoCurrentChallenge()
+		{
+			// ARRANGE
+
+			// The test starts with no challenges. Thus, don't do anything.
+
+			// ACT
+			TestViewModel.StartNewRun();
+		}
 	}
 }

@@ -97,6 +97,9 @@ namespace Homunculus_ViewModel
 			}
 		}
 
+		private bool runInProgress = false;
+		public bool RunInProgress { get { return runInProgress; } }
+
 		// TODO: Should these really be properties? What if the View want to use
 		// different words, or even a different language?
 		public string SuccessButtonText { get; set; }
@@ -195,6 +198,51 @@ namespace Homunculus_ViewModel
 			NotifyPropertyChanged("SplitList");
 		}
 
+		public void StartNewRun()
+		{
+			if (challengeList.Count == 0)
+				throw new InvalidOperationException();
+
+			// TODO: Check for a already-active run.
+			// NOTE: This is a hack so that I can get start to work.
+			if (RunInProgress)
+			{
+				Challenges.EndRun(currentChallenge);
+				runInProgress = false;
+			}
+
+			Challenges.StartNewRun(currentChallenge);
+
+			// Zero out the split counts.
+			// TODO: Implement PB tracking.
+			foreach (var split in SplitList)
+			{
+				split.CurrentValue = 0;
+			}
+
+			// Reset current split number.
+			CurrentSplit = 0;
+
+			runInProgress = true;
+
+			// TODO: How does the Model know that we are now on split 0?
+			// Does it do this on its own because it knows that the user
+			// started the new run?
+
+			// We changed some of our public properties.
+			NotifyPropertyChanged("SplitList");
+		}
+
+		public void EndRun()
+		{
+			if (!RunInProgress)
+				throw new InvalidOperationException();
+
+			Challenges.EndRun(currentChallenge);
+
+			runInProgress = false;
+		}
+
 		/// <summary>
 		/// NOTE: This might be deprecated, or at least delayed.
 		/// </summary>
@@ -262,7 +310,6 @@ namespace Homunculus_ViewModel
 		private IHomunculusModel Challenges;
 
 		private int CurrentSplit = 0;
-		private bool RunInProgress = false;
 #endregion
 
 		public event PropertyChangedEventHandler PropertyChanged;

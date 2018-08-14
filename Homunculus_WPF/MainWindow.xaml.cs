@@ -29,6 +29,9 @@ namespace Homunculus_WPF
 			Closing += ((SplitsViewModel)DataContext).OnClosing;
 
 			splitsListView.SelectedIndex = 0;
+
+			// TODO: What if the last challenge has an active run?
+			statusText.Text = "Run not active";
 		}
 
 		private void failureButton_Click(object sender, RoutedEventArgs e)
@@ -73,6 +76,8 @@ namespace Homunculus_WPF
 			ListView lv = (sender as ListView);
 			if (lv.SelectedItem != null)
 				((SplitsViewModel)DataContext).CurrentChallenge = lv.SelectedItem.ToString();
+
+			// TODO: What if this challenge has an active run?
 		}
 
 		private void deleteChallengeButton_Click(object sender, RoutedEventArgs e)
@@ -89,6 +94,26 @@ namespace Homunculus_WPF
 				// Invoke the Delete method on it.
 				(DataContext as SplitsViewModel).DeleteChallenge(challengeName);
 			}
+		}
+
+		private void startRunButton_Click(object sender, RoutedEventArgs e)
+		{
+			// Inform the ViewModel.
+			(DataContext as SplitsViewModel).StartNewRun();
+
+			// Reset the index of the split window.
+			splitsListView.SelectedIndex = 0;
+
+			statusText.Text = "Run In Progress";
+
+		}
+
+		private void endRunButton_Click(object sender, RoutedEventArgs e)
+		{
+			// Inform the ViewModel.
+			(DataContext as SplitsViewModel).EndRun();
+
+			statusText.Text = "Run not active";
 		}
 	}
 }
