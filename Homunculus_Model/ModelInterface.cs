@@ -19,8 +19,5 @@ namespace Homunculus_Model
 		void Failure(string ChallengeName);
 		void EndRun(string ChallengeName);
 		List<Run> GetRuns(string ChallengeName);
-
-		// TODO: Delete.
-		void UpdateRun(string ChallengeName, List<int> SplitValues);
 	}
 }

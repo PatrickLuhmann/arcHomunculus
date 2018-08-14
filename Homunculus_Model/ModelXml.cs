@@ -505,42 +505,6 @@ namespace Homunculus_Model
 			ChallengeRuns.AcceptChanges();
 		}
 
-		public void UpdateRun(string ChallengeName, List<int> SplitValues)
-		{
-			// Check for bad parameters.
-			if (ChallengeName == null || SplitValues == null)
-				throw new ArgumentNullException();
-
-			// Get the Challenge ID.
-			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
-				.Select("Name = '" + ChallengeName + "'");
-			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
-
-			// Get the active run for this challenge.
-			DataRow[] rowRuns = ChallengeRuns.Tables["Runs"]
-				.Select("ChallengeID = " + challengeID.ToString(),
-					"ID DESC");
-			if (Convert.ToBoolean(rowRuns[0]["Closed"]) == true)
-				throw new InvalidOperationException();
-			UInt32 runID = Convert.ToUInt32(rowRuns[0]["ID"]);
-
-			// Get the splits that go with this challenge.
-			// Make sure they are in the correct order.
-			DataRow[] rowSplits = ChallengeRuns.Tables["Splits"]
-				.Select("ChallengeID = " + challengeID.ToString(),
-					"IndexWithinChallenge ASC");
-
-			if (rowSplits.Length != SplitValues.Count)
-				throw new ArgumentException();
-
-			for (int i = 0; i < rowSplits.Length; i++)
-			{
-				DataRow[] rowCounts = ChallengeRuns.Tables["Counts"]
-					.Select("RunID = " + runID.ToString() + " AND SplitID = " + rowSplits[i]["ID"].ToString());
-				rowCounts[0]["Value"] = SplitValues[i];
-			}
-		}
-
 		public void EndRun(string ChallengeName)
 		{
 			if (ChallengeName == null)
@@ -561,8 +525,6 @@ namespace Homunculus_Model
 
 			// Close the run.
 			runRows[0]["Closed"] = true;
-
-			// Check to see if this run is a new PB.
 		}
 
 		public List<Run> GetRuns(string ChallengeName)
