@@ -349,6 +349,36 @@ namespace Homunculus_Model
 			}
 		}
 
+		public void Success(string ChallengeName)
+		{
+			// Check for bad parameters.
+			if (ChallengeName == null)
+				throw new ArgumentNullException();
+
+			// Get the Challenge ID.
+			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
+										.Select("Name = '" + ChallengeName + "'");
+			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
+
+			// Get the active run for this challenge. Sorting by ID DESC
+			// means the newest will be at index 0.
+			DataRow[] rowRuns = ChallengeRuns.Tables["Runs"]
+				.Select("ChallengeID = " + challengeID.ToString(),
+				"ID DESC");
+			// If the newest run is closed then Success is meaningless.
+			if (Convert.ToBoolean(rowRuns[0]["Closed"]) == true)
+				throw new InvalidOperationException();
+			UInt32 runID = Convert.ToUInt32(rowRuns[0]["ID"]);
+
+			// Increment CurrentSplit.
+
+		}
+
+		public void Failure()
+		{
+
+		}
+
 		public void UpdateRun(string ChallengeName, List<int> SplitValues)
 		{
 			// Check for bad parameters.

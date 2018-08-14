@@ -608,32 +608,40 @@ namespace UnitTest_Homunculus_Model
 			// Create a new challenge.
 			List<Split> SplitsAfter = TestModel.CreateChallenge(challengeName, SplitNamesBefore);
 
-			List<int> splitValues = new List<int>();
-
 			// Start a new run then end it immediately.
 			TestModel.StartNewRun(challengeName);
 			TestModel.EndRun(challengeName);
 
-			// Start a new run and give it some values before ending it.
+			// Start a new run and give it some values before completing it.
 			TestModel.StartNewRun(challengeName);
-			for (int i = 0; i < SplitsAfter.Count; i++)
-			{
-				splitValues.Add(i);
-			}
-			// TODO: This run is finished. How to tell the model?
-			TestModel.UpdateRun(challengeName, splitValues);
-			TestModel.EndRun(challengeName);
+			// Split 0
+			TestModel.Success(challengeName);
+			// Split 1
+			TestModel.Failure();
+			TestModel.Success(challengeName);
+			// Split 2
+			TestModel.Failure();
+			TestModel.Failure();
+			TestModel.Success(challengeName);
+			// Split 3
+			TestModel.Failure();
+			TestModel.Failure();
+			TestModel.Failure();
+			TestModel.Success(challengeName);
 
-			splitValues.Clear();
-
-			// Start a new run, give it some values, but don't end it.
+			// Start a new run, give it some values, but don't end or complete it.
 			TestModel.StartNewRun(challengeName);
-			for (int i = 0; i < SplitsAfter.Count; i++)
-			{
-				splitValues.Add(i * 2 + 1);
-			}
-			// TODO: How to tell the model which split we are on?
-			TestModel.UpdateRun(challengeName, splitValues);
+			// Split 0
+			TestModel.Failure();
+			TestModel.Success(challengeName);
+			// Split 1
+			TestModel.Success(challengeName);
+			// Split 2
+			TestModel.Failure();
+			TestModel.Failure();
+			TestModel.Failure();
+			TestModel.Failure();
+			TestModel.Failure();
 
 			// Verify
 			List<Run> runs = TestModel.GetRuns(challengeName);
@@ -643,7 +651,7 @@ namespace UnitTest_Homunculus_Model
 			Assert.AreEqual(0, runs[0].SplitCounts[1]);
 			Assert.AreEqual(0, runs[0].SplitCounts[2]);
 			Assert.AreEqual(0, runs[0].SplitCounts[3]);
-			Assert.AreEqual(0, runs[0].CurrentSplitIndex);
+			Assert.AreEqual(0, runs[0].CurrentSplit);
 			Assert.AreEqual(true, runs[0].Closed);
 			Assert.AreEqual(false, runs[0].PB);
 			Assert.AreEqual(4, runs[1].SplitCounts.Count);
@@ -651,17 +659,17 @@ namespace UnitTest_Homunculus_Model
 			Assert.AreEqual(1, runs[1].SplitCounts[1]);
 			Assert.AreEqual(2, runs[1].SplitCounts[2]);
 			Assert.AreEqual(3, runs[1].SplitCounts[3]);
-			Assert.AreEqual(4, runs[0].CurrentSplitIndex);
-			Assert.AreEqual(true, runs[0].Closed);
-			Assert.AreEqual(true, runs[0].PB);
+			Assert.AreEqual(4, runs[1].CurrentSplit);
+			Assert.AreEqual(true, runs[1].Closed);
+			Assert.AreEqual(true, runs[1].PB);
 			Assert.AreEqual(4, runs[2].SplitCounts.Count);
 			Assert.AreEqual(1, runs[2].SplitCounts[0]);
-			Assert.AreEqual(3, runs[2].SplitCounts[1]);
+			Assert.AreEqual(0, runs[2].SplitCounts[1]);
 			Assert.AreEqual(5, runs[2].SplitCounts[2]);
-			Assert.AreEqual(7, runs[2].SplitCounts[3]);
-			Assert.AreEqual()
-			Assert.AreEqual(false, runs[0].Closed);
-			Assert.AreEqual(false, runs[0].PB);
+			Assert.AreEqual(0, runs[2].SplitCounts[3]);
+			Assert.AreEqual(2, runs[2].CurrentSplit);
+			Assert.AreEqual(false, runs[2].Closed);
+			Assert.AreEqual(false, runs[2].PB);
 		}
 
 		[TestMethod]
@@ -756,6 +764,90 @@ namespace UnitTest_Homunculus_Model
 			Assert.AreEqual(4 * 4, verifyDb.Tables["Splits"].Rows.Count);
 			Assert.AreEqual(2 + 2 + 1, verifyDb.Tables["Runs"].Rows.Count);
 			Assert.AreEqual(4 * (2 + 2 + 1), verifyDb.Tables["Counts"].Rows.Count);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(ArgumentNullException))]
+		public void Success_NullChallengeName()
+		{
+			// ARRANGE
+			string challengeName = "new challenge";
+
+			// Create a new challenge.
+			List<Split> SplitsAfter = TestModel.CreateChallenge(challengeName, SplitNamesBefore);
+
+			// ACT
+			TestModel.Success(null);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.IndexOutOfRangeException))]
+		public void Success_UnknownChallengeName()
+		{
+			// ARRANGE
+			string challengeName = "new challenge";
+
+			// Create a new challenge.
+			List<Split> SplitsAfter = TestModel.CreateChallenge(challengeName, SplitNamesBefore);
+
+			// ACT
+			TestModel.Success("unknown challenge name");
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.IndexOutOfRangeException))]
+		public void Success_NoRunForThisChallenge()
+		{
+			// ARRANGE
+			string challengeName = "new challenge";
+
+			// Create a new challenge.
+			List<Split> SplitsAfter = TestModel.CreateChallenge(challengeName, SplitNamesBefore);
+
+			// ACT
+			TestModel.Success(challengeName);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.InvalidOperationException))]
+		public void Success_RunNotActive()
+		{
+			// ARRANGE
+			// Create a new challenge.
+			string challengeName = "new challenge";
+			List<Split> SplitsAfter = TestModel.CreateChallenge(challengeName, SplitNamesBefore);
+
+			// Create a new run and then end it.
+			TestModel.StartNewRun(challengeName);
+			TestModel.EndRun(challengeName);
+
+			// ACT
+			TestModel.Success(challengeName);
+		}
+
+		[TestMethod]
+		public void Success_FirstSplitFirstValue()
+		{
+			// ARRANGE
+			// Create a new challenge.
+			string challengeName = "new challenge";
+			List<Split> SplitsAfter = TestModel.CreateChallenge(challengeName, SplitNamesBefore);
+
+			// Create a new run.
+			TestModel.StartNewRun(challengeName);
+
+			// ACT
+			TestModel.Success(challengeName);
+
+			// ASSERT
+			// Just look at the first split of the first run;
+			// GetRuns has its own unit tests.
+			List<Run> runs = TestModel.GetRuns(challengeName);
+			Assert.AreEqual(0, runs[0].SplitCounts[0]);
+			Assert.AreEqual(0, runs[0].SplitCounts[1]);
+			Assert.AreEqual(1, runs[0].CurrentSplit);
+			Assert.AreEqual(false, runs[0].Closed);
+			Assert.AreEqual(false, runs[0].PB);
 		}
 	}
 }
