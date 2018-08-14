@@ -409,7 +409,7 @@ namespace Homunculus_Model
 			// Check to see if this run is a new PB.
 		}
 
-		public List<List<int>> GetRuns(string ChallengeName)
+		public List<Run> GetRuns(string ChallengeName)
 		{
 			if (ChallengeName == null)
 				throw new ArgumentNullException();
@@ -429,7 +429,7 @@ namespace Homunculus_Model
 				.Select("ChallengeID = " + challengeID.ToString(),
 				"ID ASC");
 
-			List<List<int>> runs = new List<List<int>>();
+			List<Run> runs = new List<Run>();
 			foreach (var rr in rowRuns)
 			{
 				// Need a new list for each Run.
@@ -449,7 +449,7 @@ namespace Homunculus_Model
 				}
 
 				// Add the newly-created list of split values to the main list.
-				runs.Add(runCounts);
+				runs.Add(new Run { SplitCounts = runCounts, Closed = false, PB = false });
 			}
 			return runs;
 		}
