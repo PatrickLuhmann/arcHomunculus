@@ -16,7 +16,7 @@ namespace Homunculus_Model
 		List<Split> GetSplits(string ChallengeName);
 		void StartNewRun(string ChallengeName);
 		void Success(string ChallengeName);
-		void Failure();
+		void Failure(string ChallengeName);
 		void EndRun(string ChallengeName);
 		List<Run> GetRuns(string ChallengeName);
 

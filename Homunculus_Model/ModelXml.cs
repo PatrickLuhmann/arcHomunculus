@@ -102,6 +102,8 @@ namespace Homunculus_Model
 			runs.Columns["ID"].AutoIncrementSeed = 1;
 			runs.Columns["ID"].AutoIncrementStep = 1;
 			runs.Columns.Add("ChallengeID", typeof(UInt32));
+			runs.Columns.Add("CurrentSplit", typeof(int));
+			runs.Columns["CurrentSplit"].DefaultValue = 0;
 			runs.Columns.Add("Closed", typeof(bool));
 			runs.Columns["Closed"].DefaultValue = false;
 			runs.Columns.Add("PB", typeof(bool));
@@ -357,26 +359,150 @@ namespace Homunculus_Model
 
 			// Get the Challenge ID.
 			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
-										.Select("Name = '" + ChallengeName + "'");
+				.Select("Name = '" + ChallengeName + "'");
 			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
+
+			// Get the splits that go with this challenge.
+			dr = ChallengeRuns.Tables["Splits"]
+				.Select("ChallengeID = " + challengeID.ToString(),
+					"IndexWithinChallenge ASC");
+			int numSplits = dr.Count();
 
 			// Get the active run for this challenge. Sorting by ID DESC
 			// means the newest will be at index 0.
 			DataRow[] rowRuns = ChallengeRuns.Tables["Runs"]
 				.Select("ChallengeID = " + challengeID.ToString(),
-				"ID DESC");
+					"ID DESC");
 			// If the newest run is closed then Success is meaningless.
 			if (Convert.ToBoolean(rowRuns[0]["Closed"]) == true)
 				throw new InvalidOperationException();
 			UInt32 runID = Convert.ToUInt32(rowRuns[0]["ID"]);
 
 			// Increment CurrentSplit.
+			int currSplit = (int)rowRuns[0]["CurrentSplit"];
+			currSplit++;
+			rowRuns[0]["CurrentSplit"] = currSplit;
+			// NOTE: Do this here because PB work depends on it.
+			ChallengeRuns.Tables["Runs"].AcceptChanges();
 
+			// Check to see if that was the final split.
+			if (currSplit == numSplits)
+			{
+				// This run is now closed.
+				rowRuns[0]["Closed"] = true;
+
+				// Check to see if this is a new PB.
+
+				// Calculate total failures for this run.
+				int currentTotalFails = CalcTotalFails(runID);
+
+				// Figure out the current PB.
+				int pb = GetPB(challengeID);
+
+				if (currentTotalFails < pb || pb == -1)
+				{
+					// Clear the old PB run.
+					ClearPB(challengeID);
+
+					// New PB! Huzzah!
+					rowRuns[0]["PB"] = true;
+				}
+			}
+			ChallengeRuns.AcceptChanges();
 		}
 
-		public void Failure()
+		// NOTE: The caller must update the Runs table.
+		private void ClearPB(UInt32 ChallengeID)
 		{
+			// Get the PB run.
+			DataRow[] rowRuns = ChallengeRuns.Tables["Runs"]
+				.Select("ChallengeID = " + ChallengeID.ToString() + " AND PB = true");
 
+			if (rowRuns.Count() == 1)
+			{
+				rowRuns[0]["PB"] = false;
+			}
+		}
+
+		private int GetPB(UInt32 ChallengeID)
+		{
+			int currPb = -1;
+
+			// Get the PB run for the given challenge.
+			DataRow[] rowRuns = ChallengeRuns.Tables["Runs"]
+				.Select("ChallengeID = " + ChallengeID.ToString() + " AND PB = true");
+
+			// There might not be a PB (e.g. no runs are complete).
+			if (rowRuns.Count() == 1)
+			{
+				// Get the counts for this run.
+				DataRow[] rowCounts = ChallengeRuns.Tables["Counts"]
+					.Select("RunID = " + rowRuns[0]["ID"].ToString());
+
+				// Calculate the count total.
+				currPb = 0;
+				foreach (var cr in rowCounts)
+				{
+					int val = (int)cr["Value"];
+					currPb += val;
+				}
+			}
+
+			return currPb;
+		}
+
+		private int CalcTotalFails(UInt32 RunID)
+		{
+			int total = 0;
+
+			DataRow[] countRows = ChallengeRuns.Tables["Counts"]
+				.Select("RunID = " + RunID.ToString());
+
+			foreach (var cr in countRows)
+			{
+				int val = (int)cr["Value"];
+				total += val;
+			}
+
+			return total;
+		}
+
+		public void Failure(string ChallengeName)
+		{
+			// Check for bad parameters.
+			if (ChallengeName == null)
+				throw new ArgumentNullException();
+
+			// Get the Challenge ID.
+			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
+				.Select("Name = '" + ChallengeName + "'");
+			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
+
+			// Get the active run for this challenge. Sorting by ID DESC
+			// means the newest will be at index 0.
+			DataRow[] rowRuns = ChallengeRuns.Tables["Runs"]
+				.Select("ChallengeID = " + challengeID.ToString(),
+					"ID DESC");
+			// If the newest run is closed then Failure is meaningless.
+			if (Convert.ToBoolean(rowRuns[0]["Closed"]) == true)
+				throw new InvalidOperationException();
+			UInt32 runID = Convert.ToUInt32(rowRuns[0]["ID"]);
+			int currentSplit = (int)rowRuns[0]["CurrentSplit"];
+
+			// Get the SplitID of the split we are on.
+			dr = ChallengeRuns.Tables["Splits"]
+				.Select("ChallengeID = " + challengeID.ToString(),
+					"IndexWithinChallenge ASC");
+			UInt32 splitID = Convert.ToUInt32(dr[currentSplit]["ID"]);
+
+			// Find the current Count and increment it.
+			DataRow[] countRows = ChallengeRuns.Tables["Counts"]
+				.Select("RunID = " + runID.ToString() + " AND SplitID = " + splitID.ToString());
+			int value = (int)countRows[0]["Value"];
+			value++;
+			countRows[0]["Value"] = value;
+
+			ChallengeRuns.AcceptChanges();
 		}
 
 		public void UpdateRun(string ChallengeName, List<int> SplitValues)
@@ -387,13 +513,13 @@ namespace Homunculus_Model
 
 			// Get the Challenge ID.
 			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
-										.Select("Name = '" + ChallengeName + "'");
+				.Select("Name = '" + ChallengeName + "'");
 			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
 
 			// Get the active run for this challenge.
 			DataRow[] rowRuns = ChallengeRuns.Tables["Runs"]
 				.Select("ChallengeID = " + challengeID.ToString(),
-				"ID DESC");
+					"ID DESC");
 			if (Convert.ToBoolean(rowRuns[0]["Closed"]) == true)
 				throw new InvalidOperationException();
 			UInt32 runID = Convert.ToUInt32(rowRuns[0]["ID"]);
@@ -402,7 +528,7 @@ namespace Homunculus_Model
 			// Make sure they are in the correct order.
 			DataRow[] rowSplits = ChallengeRuns.Tables["Splits"]
 				.Select("ChallengeID = " + challengeID.ToString(),
-				"IndexWithinChallenge ASC");
+					"IndexWithinChallenge ASC");
 
 			if (rowSplits.Length != SplitValues.Count)
 				throw new ArgumentException();
@@ -422,13 +548,13 @@ namespace Homunculus_Model
 
 			// Get the Challenge ID.
 			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
-										.Select("Name = '" + ChallengeName + "'");
+				.Select("Name = '" + ChallengeName + "'");
 			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
 
 			// Make sure there is an active run for this challenge.
 			DataRow[] runRows = ChallengeRuns.Tables["Runs"]
 				.Select("ChallengeID = " + challengeID.ToString(),
-				"ID DESC");
+					"ID DESC");
 			if ((runRows.Length == 0) ||
 				(Convert.ToBoolean(runRows[0]["Closed"]) == true))
 				throw new InvalidOperationException();
@@ -446,18 +572,18 @@ namespace Homunculus_Model
 
 			// Get the Challenge ID.
 			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
-										.Select("Name = '" + ChallengeName + "'");
+				.Select("Name = '" + ChallengeName + "'");
 			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
 
 			// Get the splits that go with this challenge.
 			DataRow[] rowSplits = ChallengeRuns.Tables["Splits"]
 				.Select("ChallengeID = " + challengeID.ToString(),
-				"IndexWithinChallenge ASC");
+					"IndexWithinChallenge ASC");
 
 			// Get the runs that go with this challenge.
 			DataRow[] rowRuns = ChallengeRuns.Tables["Runs"]
 				.Select("ChallengeID = " + challengeID.ToString(),
-				"ID ASC");
+					"ID ASC");
 
 			List<Run> runs = new List<Run>();
 			foreach (var rr in rowRuns)
@@ -467,6 +593,8 @@ namespace Homunculus_Model
 
 				// Get the ID of this run.
 				UInt32 runId = Convert.ToUInt32(rr["ID"]);
+
+				// Get
 
 				// The splits need to be ordered for this to work.
 				foreach (var sr in rowSplits)
@@ -479,7 +607,13 @@ namespace Homunculus_Model
 				}
 
 				// Add the newly-created list of split values to the main list.
-				runs.Add(new Run { SplitCounts = runCounts, Closed = false, PB = false });
+				runs.Add(new Run
+				{
+					SplitCounts = runCounts,
+					CurrentSplit = (int)rr["CurrentSplit"],
+					Closed = (bool)rr["Closed"],
+					PB = (bool)rr["PB"]
+				});
 			}
 			return runs;
 		}
