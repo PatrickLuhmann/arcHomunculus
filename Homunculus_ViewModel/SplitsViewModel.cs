@@ -49,21 +49,40 @@ namespace Homunculus_ViewModel
 					// Get the split info for this challenge.
 					List<Split> mSplits = Challenges.GetSplits(currentChallenge);
 
-					// TODO: Get the PB run for this challenge.
+					// Get the PB run for this challenge.
+					// TODO: Should this be a service that the Model provides?
+					List<Run> runList = Challenges.GetRuns(currentChallenge);
+					Run runPB = null;
+					if (runList != null)
+					{
+						foreach (var run in runList)
+						{
+							if (run.PB)
+							{
+								runPB = run;
+								break;
+							}
+						}
+						if (runPB == null)
+						{
+							// This challenge does not have a PB.
+						}
+					}
 
 					// Create the list of splits for the View.
 					// Assume there isn't an active run for this split,
 					// so set CurrentValue to 0.
 					// CurrentPbValue comes from the runs.
 					splitList = new ObservableCollection<SplitVM>();
-					foreach (var split in mSplits)
+					for (int idx = 0; idx < mSplits.Count; idx++)
 					{
+						int splitPB = (runPB == null ? 9999 : runPB.SplitCounts[idx]);
 						splitList.Add(new SplitVM
 						{
-							SplitName = split.Name,
+							SplitName = mSplits[idx].Name,
 							CurrentValue = 0,
-							DiffValue = 5,
-							CurrentPbValue = 7
+							DiffValue = splitPB, // TODO: I think this is going away.
+							CurrentPbValue = splitPB
 						});
 					}
 				}
@@ -100,11 +119,12 @@ namespace Homunculus_ViewModel
 		/// </summary>
 		public void SuccessProc()
 		{
-			// If the user has not defined a split yet, throw an exception. This
-			// should never happen; it is the responsibility of other code to
-			// enforce this rule.  The exception is to help debugging.
-			if (splitList.Count == 0)
-				throw new System.ArgumentOutOfRangeException();
+			// A run must be in progress.
+			if (runInProgress == false)
+				throw new InvalidOperationException();
+
+			// Inform the Model.
+			Challenges.Success(currentChallenge);
 
 			// Go to the next split.
 			CurrentSplit++;
@@ -113,7 +133,32 @@ namespace Homunculus_ViewModel
 			if (CurrentSplit == SplitList.Count)
 			{
 				// TODO: Handle "game won" condition here.
-				CurrentSplit--;
+				runInProgress = false;
+				CurrentSplit = 0;
+
+				// TODO:If the current run is a PB, then update the PB
+				// values for each of the splits.
+				// TODO: Should this be done immediately, or only when
+				// a new run is started? If here, then the user will not
+				// have a chance to compare the current to the PB; however
+				// they could always delay clicking Success on the final split.
+				int currPB = 0;
+				int currTotal = 0;
+				foreach (var split in splitList)
+				{
+					currPB += split.CurrentPbValue;
+					currTotal += split.CurrentValue;
+				}
+				if (currTotal < currPB)
+				{
+					// Update the PB value in the splits so that they
+					// are ready for the next run. Note that the Model
+					// has already done everything it needs to do.
+					foreach (var split in splitList)
+					{
+						split.CurrentPbValue = split.CurrentValue;
+					}
+				}
 			}
 		}
 
@@ -125,6 +170,13 @@ namespace Homunculus_ViewModel
 		/// </summary>
 		public void FailureProc()
 		{
+			// A run must be in progress.
+			if (runInProgress == false)
+				throw new InvalidOperationException();
+
+			// Inform the Model.
+			Challenges.Failure(currentChallenge);
+
 			// Increment the current value of the current split.
 			splitList[CurrentSplit].CurrentValue++;
 
@@ -198,20 +250,16 @@ namespace Homunculus_ViewModel
 			Challenges.StartNewRun(currentChallenge);
 
 			// Zero out the split counts.
-			// TODO: Implement PB tracking.
 			foreach (var split in SplitList)
 			{
 				split.CurrentValue = 0;
+				split.DiffValue = split.CurrentPbValue;
 			}
 
 			// Reset current split number.
 			CurrentSplit = 0;
 
 			runInProgress = true;
-
-			// TODO: How does the Model know that we are now on split 0?
-			// Does it do this on its own because it knows that the user
-			// started the new run?
 
 			// We changed some of our public properties.
 			NotifyPropertyChanged("SplitList");

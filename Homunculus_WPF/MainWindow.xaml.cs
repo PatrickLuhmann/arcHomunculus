@@ -113,6 +113,8 @@ namespace Homunculus_WPF
 			// Inform the ViewModel.
 			(DataContext as SplitsViewModel).EndRun();
 
+			// TODO: This is fine for explicit end, but what about when
+			// the run ends naturally?
 			statusText.Text = "Run not active";
 		}
 	}

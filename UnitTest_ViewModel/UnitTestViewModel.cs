@@ -14,6 +14,37 @@ namespace UnitTest_ViewModel
 		Mock<IUserSettings> mockSettings;
 		Mock<IHomunculusModel> mockModel;
 
+		private void CreateBasicChallenge(string ChallengeName)
+		{
+			List<string> splits = new List<string>
+			{
+				"split 1",
+				"split 2",
+				"split 3",
+				"split 4",
+				"split 5"
+			};
+
+			// Setup the model mock to return the appropriate list.
+			List<string> mockModelChallengeList = new List<string> { ChallengeName };
+			mockModel.Setup(m => m.GetChallenges())
+				.Returns(mockModelChallengeList);
+
+			// Prepare the list of Split objects that the mock Model
+			// will return during CreateChallenge().
+			List<Split> modelSplits = new List<Split>();
+			foreach (var s in splits)
+			{
+				modelSplits.Add(new Split { Handle = 0, Name = s });
+			}
+			mockModel.Setup(m => m.GetSplits(ChallengeName))
+				.Returns(modelSplits);
+
+			// Create the challenge.
+			TestViewModel.CreateChallenge(ChallengeName, splits);
+
+		}
+
 		[TestInitialize]
 		public void Setup()
 		{
@@ -46,21 +77,31 @@ namespace UnitTest_ViewModel
 		}
 
 		[TestMethod]
-		[ExpectedException(typeof(System.ArgumentOutOfRangeException))]
-		public void SuccessProc_NoSplits()
+		[ExpectedException(typeof(System.InvalidOperationException))]
+		public void SuccessProc_RunNotInProgress()
 		{
-			// It is not allowed to proc success or failure when there are
-			// no splits defined.
+			// ARRANGE
+			string challengeName = "new challenge";
+			CreateBasicChallenge(challengeName);
+
+			// ACT
 			TestViewModel.SuccessProc();
+
+			// ASSERT
 		}
 
 		[TestMethod]
-		[ExpectedException(typeof(System.ArgumentOutOfRangeException))]
-		public void FailureProc_NoSplits()
+		[ExpectedException(typeof(System.InvalidOperationException))]
+		public void FailureProc_RunNotInProgress()
 		{
-			// It is not allowed to proc success or failure when there are
-			// no splits defined.
+			// ARRANGE
+			string challengeName = "new challenge";
+			CreateBasicChallenge(challengeName);
+
+			// ACT
 			TestViewModel.FailureProc();
+
+			// ASSERT
 		}
 
 		[TestMethod]
@@ -140,24 +181,24 @@ namespace UnitTest_ViewModel
 			Assert.AreEqual(5, TestViewModel.SplitList.Count);
 			Assert.AreEqual("split 1", TestViewModel.SplitList[0].SplitName);
 			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentValue);
-			Assert.AreEqual(5, TestViewModel.SplitList[0].DiffValue);
-			Assert.AreEqual(7, TestViewModel.SplitList[0].CurrentPbValue);
+			Assert.AreEqual(9999, TestViewModel.SplitList[0].DiffValue);
+			Assert.AreEqual(9999, TestViewModel.SplitList[0].CurrentPbValue);
 			Assert.AreEqual("split 2", TestViewModel.SplitList[1].SplitName);
 			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentValue);
-			Assert.AreEqual(5, TestViewModel.SplitList[1].DiffValue);
-			Assert.AreEqual(7, TestViewModel.SplitList[1].CurrentPbValue);
+			Assert.AreEqual(9999, TestViewModel.SplitList[1].DiffValue);
+			Assert.AreEqual(9999, TestViewModel.SplitList[1].CurrentPbValue);
 			Assert.AreEqual("split 3", TestViewModel.SplitList[2].SplitName);
 			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentValue);
-			Assert.AreEqual(5, TestViewModel.SplitList[2].DiffValue);
-			Assert.AreEqual(7, TestViewModel.SplitList[2].CurrentPbValue);
+			Assert.AreEqual(9999, TestViewModel.SplitList[2].DiffValue);
+			Assert.AreEqual(9999, TestViewModel.SplitList[2].CurrentPbValue);
 			Assert.AreEqual("split 4", TestViewModel.SplitList[3].SplitName);
 			Assert.AreEqual(0, TestViewModel.SplitList[3].CurrentValue);
-			Assert.AreEqual(5, TestViewModel.SplitList[3].DiffValue);
-			Assert.AreEqual(7, TestViewModel.SplitList[3].CurrentPbValue);
+			Assert.AreEqual(9999, TestViewModel.SplitList[3].DiffValue);
+			Assert.AreEqual(9999, TestViewModel.SplitList[3].CurrentPbValue);
 			Assert.AreEqual("split 5", TestViewModel.SplitList[4].SplitName);
 			Assert.AreEqual(0, TestViewModel.SplitList[4].CurrentValue);
-			Assert.AreEqual(5, TestViewModel.SplitList[4].DiffValue);
-			Assert.AreEqual(7, TestViewModel.SplitList[4].CurrentPbValue);
+			Assert.AreEqual(9999, TestViewModel.SplitList[4].DiffValue);
+			Assert.AreEqual(9999, TestViewModel.SplitList[4].CurrentPbValue);
 
 			// Has the user setting LastUsedChallenge been updated correctly?
 			mockSettings.Verify(us => us.SetUserSetting("LastUsedChallenge", challengeName));
@@ -211,8 +252,8 @@ namespace UnitTest_ViewModel
 			{
 				SplitName = "split 1",
 				CurrentValue = 0,
-				CurrentPbValue = 7,
-				DiffValue = 5
+				CurrentPbValue = 9999,
+				DiffValue = 9999
 			};
 			Assert.AreEqual<SplitVM>(testSplit, mySvm.SplitList[0]);
 			testSplit.SplitName = "split 2";
@@ -368,6 +409,110 @@ namespace UnitTest_ViewModel
 
 			// ACT
 			TestViewModel.StartNewRun();
+		}
+
+		[TestMethod]
+		public void Aggregate_FailureAndSuccessOnRun()
+		{
+			// ARRANGE
+			string challengeName = "new challenge";
+			CreateBasicChallenge(challengeName);
+
+			// ACT
+
+			// Start the run.
+			TestViewModel.StartNewRun();
+
+			// Split 1 has no failures.
+			TestViewModel.SuccessProc();
+
+			// Split 2 has 2 failures.
+			TestViewModel.FailureProc();
+			TestViewModel.FailureProc();
+			TestViewModel.SuccessProc();
+
+			// Split 3 has 7 failures.
+			TestViewModel.FailureProc();
+			TestViewModel.FailureProc();
+			TestViewModel.FailureProc();
+			TestViewModel.FailureProc();
+			TestViewModel.FailureProc();
+			TestViewModel.FailureProc();
+			TestViewModel.FailureProc();
+			TestViewModel.SuccessProc();
+
+			// Split 4 has 1 failure.
+			TestViewModel.FailureProc();
+			TestViewModel.SuccessProc();
+
+			// Split 5 has no failures.
+			TestViewModel.SuccessProc();
+
+
+			// ASSERT
+			Assert.AreEqual(false, TestViewModel.RunInProgress);
+			Assert.AreEqual(5, TestViewModel.SplitList.Count);
+			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentValue);
+			Assert.AreEqual(9999, TestViewModel.SplitList[0].DiffValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentPbValue);
+			Assert.AreEqual(2, TestViewModel.SplitList[1].CurrentValue);
+			Assert.AreEqual(9997, TestViewModel.SplitList[1].DiffValue);
+			Assert.AreEqual(2, TestViewModel.SplitList[1].CurrentPbValue);
+			Assert.AreEqual(7, TestViewModel.SplitList[2].CurrentValue);
+			Assert.AreEqual(9992, TestViewModel.SplitList[2].DiffValue);
+			Assert.AreEqual(7, TestViewModel.SplitList[2].CurrentPbValue);
+			Assert.AreEqual(1, TestViewModel.SplitList[3].CurrentValue);
+			Assert.AreEqual(9998, TestViewModel.SplitList[3].DiffValue);
+			Assert.AreEqual(1, TestViewModel.SplitList[3].CurrentPbValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[4].CurrentValue);
+			Assert.AreEqual(9999, TestViewModel.SplitList[4].DiffValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[4].CurrentPbValue);
+			mockModel.Verify(mm => mm.Failure(challengeName), Times.Exactly(10));
+			mockModel.Verify(mm => mm.Success(challengeName), Times.Exactly(5));
+
+			// ACT II - One More Time, With Feeling!
+
+			// Start the run.
+			TestViewModel.StartNewRun();
+
+			// Split 1 has no failures.
+			TestViewModel.SuccessProc();
+
+			// Split 2 has no failures.
+			TestViewModel.SuccessProc();
+
+			// Split 3 has no failures.
+			TestViewModel.SuccessProc();
+
+			// Split 4 has no failures.
+			TestViewModel.SuccessProc();
+
+			// Split 5 has 1 failure. Dang!
+			TestViewModel.FailureProc();
+			TestViewModel.SuccessProc();
+
+
+			// ASSERT
+			Assert.AreEqual(false, TestViewModel.RunInProgress);
+			Assert.AreEqual(5, TestViewModel.SplitList.Count);
+			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[0].DiffValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentPbValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentValue);
+			Assert.AreEqual(2, TestViewModel.SplitList[1].DiffValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentPbValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentValue);
+			Assert.AreEqual(7, TestViewModel.SplitList[2].DiffValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentPbValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[3].CurrentValue);
+			Assert.AreEqual(1, TestViewModel.SplitList[3].DiffValue);
+			Assert.AreEqual(0, TestViewModel.SplitList[3].CurrentPbValue);
+			Assert.AreEqual(1, TestViewModel.SplitList[4].CurrentValue);
+			Assert.AreEqual(-1, TestViewModel.SplitList[4].DiffValue);
+			Assert.AreEqual(1, TestViewModel.SplitList[4].CurrentPbValue);
+			mockModel.Verify(mm => mm.Failure(challengeName), Times.Exactly(10 + 1));
+			mockModel.Verify(mm => mm.Success(challengeName), Times.Exactly(5 + 5));
+
 		}
 	}
 }
