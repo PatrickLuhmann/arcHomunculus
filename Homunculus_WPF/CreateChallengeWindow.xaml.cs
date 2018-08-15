@@ -32,7 +32,10 @@ namespace Homunculus_WPF
 			// some reason. Then again, I eventually want to move to a List
 			// that has rows that can be moved up/down via the mouse, so maybe
 			// there is no point in trying to improve the text box approach.
-			splitsTextBox.Text = ((SplitsViewModel)DataContext).SplitTextList;
+			foreach (var split in ((SplitsViewModel)DataContext).SplitList)
+			{
+				splitsTextBox.Text += split.SplitName + Environment.NewLine;
+			}
 		}
 
 		private void addButton_Click(object sender, RoutedEventArgs e)

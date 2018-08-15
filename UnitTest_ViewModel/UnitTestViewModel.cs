@@ -41,9 +41,6 @@ namespace UnitTest_ViewModel
 			Assert.IsNotNull(TestViewModel.SplitList);
 			Assert.AreEqual(0, TestViewModel.SplitList.Count);
 
-			// The split list, text version will be empty.
-			Assert.AreEqual("", TestViewModel.SplitTextList);
-
 			// There is no current challenge.
 			Assert.AreEqual("", TestViewModel.CurrentChallenge);
 		}

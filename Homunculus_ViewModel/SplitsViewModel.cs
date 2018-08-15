@@ -81,22 +81,6 @@ namespace Homunculus_ViewModel
 		private ObservableCollection<SplitVM> splitList;
 		public ObservableCollection<SplitVM> SplitList { get { return splitList; } }
 
-		// TODO: Need to do something better than this.
-		private string splitTextList;
-		public string SplitTextList
-		{
-			get
-			{
-				splitTextList = "";
-				foreach (var split in splitList)
-				{
-					string text = split.SplitName;
-					splitTextList += text + Environment.NewLine;
-				}
-				return splitTextList;
-			}
-		}
-
 		private bool runInProgress = false;
 		public bool RunInProgress { get { return runInProgress; } }
 
