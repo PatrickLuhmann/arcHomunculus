@@ -313,7 +313,7 @@ namespace UnitTest_Homunculus_Model
 		}
 
 		[TestMethod]
-		[ExpectedException(typeof(System.IndexOutOfRangeException))]
+		[ExpectedException(typeof(System.ArgumentException))]
 		public void StartNewRun_UnknownChallengeName()
 		{
 			string challengeName = "new challenge";
@@ -369,7 +369,7 @@ namespace UnitTest_Homunculus_Model
 		}
 
 		[TestMethod]
-		[ExpectedException(typeof(System.IndexOutOfRangeException))]
+		[ExpectedException(typeof(System.ArgumentException))]
 		public void EndRun_UnknownChallengeName()
 		{
 			string challengeName = "new challenge";
@@ -400,7 +400,7 @@ namespace UnitTest_Homunculus_Model
 		}
 
 		[TestMethod]
-		[ExpectedException(typeof(System.IndexOutOfRangeException))]
+		[ExpectedException(typeof(System.ArgumentException))]
 		public void GetRuns_UnknownChallengeName()
 		{
 			string challengeName = "new challenge";
@@ -852,7 +852,7 @@ namespace UnitTest_Homunculus_Model
 		}
 
 		[TestMethod]
-		[ExpectedException(typeof(System.IndexOutOfRangeException))]
+		[ExpectedException(typeof(System.ArgumentException))]
 		public void Failure_UnknownChallengeName()
 		{
 			// ARRANGE

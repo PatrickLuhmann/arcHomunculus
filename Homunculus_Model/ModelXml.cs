@@ -306,6 +306,11 @@ namespace Homunculus_Model
 			// Get the Challenge ID.
 			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
 										.Select("Name = '" + ChallengeName + "'");
+
+			// Verify that the challenge was in the database.
+			if (dr.Count() == 0)
+				throw new ArgumentException();
+
 			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
 
 			// Make sure there isn't already an active run for this challenge.
@@ -484,6 +489,11 @@ namespace Homunculus_Model
 			// Get the Challenge ID.
 			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
 				.Select("Name = '" + ChallengeName + "'");
+
+			// Verify that the challenge was in the database.
+			if (dr.Count() == 0)
+				throw new ArgumentException();
+
 			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
 
 			// Get the active run for this challenge. Sorting by ID DESC
@@ -521,6 +531,11 @@ namespace Homunculus_Model
 			// Get the Challenge ID.
 			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
 				.Select("Name = '" + ChallengeName + "'");
+
+			// Verify that the challenge was in the database.
+			if (dr.Count() == 0)
+				throw new ArgumentException();
+
 			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
 
 			// Make sure there is an active run for this challenge.
@@ -545,6 +560,11 @@ namespace Homunculus_Model
 			// Get the Challenge ID.
 			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
 				.Select("Name = '" + ChallengeName + "'");
+
+			// Verify that the challenge was in the database.
+			if (dr.Count() == 0)
+				throw new ArgumentException();
+
 			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
 
 			// Get the splits that go with this challenge.
