@@ -118,10 +118,18 @@ namespace Homunculus_WPF
 			statusText.Text = "Run not active";
 		}
 
-		private void currentChallengeTextBlock_Loaded(object sender, RoutedEventArgs e)
+		/// <summary>
+		/// Triggered when CurrentChallenge is updated.
+		/// </summary>
+		/// This is needed when the challenge changes due to something other than
+		/// the user clicking it in the challenge list. That includes:
+		/// - app launch
+		/// - after new challenge is created
+		///  - after a challenge is deleted
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void TextBlock_SourceUpdated(object sender, DataTransferEventArgs e)
 		{
-			// This is primarily intended for app launch. I don't see this event
-			// being triggered any time after launch.
 			challengesListView.SelectedItem = ((SplitsViewModel)DataContext).CurrentChallenge;
 		}
 	}

@@ -23,6 +23,10 @@ namespace Homunculus_ViewModel
 			get { return currentChallenge; }
 			set
 			{
+				// For efficiency, don't do what was already done.
+				if (currentChallenge == value)
+					return;
+
 				// Grab the name of the challenge.
 				if (value == null)
 					currentChallenge = "";
@@ -30,7 +34,6 @@ namespace Homunculus_ViewModel
 				{
 					// Make sure that the challenge is in the database.
 					if (challengeList.Contains(value))
-//					if (challengeList.Exists(s => s.Equals(value)))
 						currentChallenge = value;
 					else
 						currentChallenge = "";
@@ -198,8 +201,6 @@ namespace Homunculus_ViewModel
 
 			// We changed some of our public properties.
 			NotifyPropertyChanged("ChallengeList");
-			NotifyPropertyChanged("CurrentChallenge");
-			NotifyPropertyChanged("SplitList");
 		}
 
 		/// <summary>

@@ -243,6 +243,11 @@ namespace UnitTest_ViewModel
 			SplitsViewModel mySvm = new SplitsViewModel(mockSettings.Object, mockModel.Object);
 
 			// ACT
+
+			// The first time does real work.
+			mySvm.CurrentChallenge = newCurrentName;
+
+			// The second time should be a nop.
 			mySvm.CurrentChallenge = newCurrentName;
 
 			// ASSERT
@@ -259,6 +264,10 @@ namespace UnitTest_ViewModel
 			testSplit.SplitName = "split 2";
 			Assert.AreEqual<SplitVM>(testSplit, mySvm.SplitList[1]);
 			mockSettings.Verify(us => us.SetUserSetting("LastUsedChallenge", newCurrentName));
+
+			// Verify efficient operation.
+			mockModel.Verify(mm => mm.GetSplits(newCurrentName), Times.AtMostOnce());
+			mockModel.Verify(mm => mm.GetRuns(newCurrentName), Times.AtMostOnce());
 		}
 
 		[TestMethod]
