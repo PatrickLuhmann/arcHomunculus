@@ -240,13 +240,14 @@ namespace Homunculus_Model
 			// Finally, delete the challenge.
 			drChallenge[0].Delete();
 
-			ChallengeRuns.AcceptChanges();
-
 			Save();
 		}
 
 		private void Save()
 		{
+			// Make sure there are no outstanding changes.
+			ChallengeRuns.AcceptChanges();
+
 			// Save the data to the database file.
 			ChallengeRuns.WriteXml(DatabaseFilename, XmlWriteMode.WriteSchema);
 			System.Diagnostics.Debug.WriteLine("Model: data file saved - " + DatabaseFilename);
@@ -323,7 +324,9 @@ namespace Homunculus_Model
 			UInt32 runId = Convert.ToUInt32(runRow["ID"].ToString());
 			ChallengeRuns.Tables["Runs"].Rows.Add(runRow);
 
+			//
 			// Create the Counts for this new Run.
+			//
 
 			// Get the splits that go with this challenge.
 			dr = ChallengeRuns.Tables["Splits"]
@@ -349,6 +352,8 @@ namespace Homunculus_Model
 				// Put the row into the table.
 				ChallengeRuns.Tables["Counts"].Rows.Add(countRow);
 			}
+
+			Save();
 		}
 
 		public void Success(string ChallengeName)
@@ -408,7 +413,8 @@ namespace Homunculus_Model
 					rowRuns[0]["PB"] = true;
 				}
 			}
-			ChallengeRuns.AcceptChanges();
+
+			Save();
 		}
 
 		// NOTE: The caller must update the Runs table.
@@ -422,6 +428,8 @@ namespace Homunculus_Model
 			{
 				rowRuns[0]["PB"] = false;
 			}
+
+			Save();
 		}
 
 		private int GetPB(UInt32 ChallengeID)
@@ -502,7 +510,7 @@ namespace Homunculus_Model
 			value++;
 			countRows[0]["Value"] = value;
 
-			ChallengeRuns.AcceptChanges();
+			Save();
 		}
 
 		public void EndRun(string ChallengeName)
@@ -525,6 +533,8 @@ namespace Homunculus_Model
 
 			// Close the run.
 			runRows[0]["Closed"] = true;
+
+			Save();
 		}
 
 		public List<Run> GetRuns(string ChallengeName)
