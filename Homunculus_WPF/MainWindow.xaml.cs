@@ -117,5 +117,12 @@ namespace Homunculus_WPF
 			// the run ends naturally?
 			statusText.Text = "Run not active";
 		}
+
+		private void currentChallengeTextBlock_Loaded(object sender, RoutedEventArgs e)
+		{
+			// This is primarily intended for app launch. I don't see this event
+			// being triggered any time after launch.
+			challengesListView.SelectedItem = ((SplitsViewModel)DataContext).CurrentChallenge;
+		}
 	}
 }
