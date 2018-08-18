@@ -125,12 +125,32 @@ namespace Homunculus_WPF
 		/// the user clicking it in the challenge list. That includes:
 		/// - app launch
 		/// - after new challenge is created
-		///  - after a challenge is deleted
+		/// - after a challenge is deleted
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
 		private void TextBlock_SourceUpdated(object sender, DataTransferEventArgs e)
 		{
+			// Update the selected index.
 			challengesListView.SelectedItem = ((SplitsViewModel)DataContext).CurrentChallenge;
+		}
+
+		/// <summary>
+		/// Triggered when splitsListView is updated via its binding.
+		/// </summary>
+		/// We need to do more than just change the items in the list. We also
+		/// need to set the selected index and the status text to reflect the
+		/// new run.
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void splitsListView_TargetUpdated(object sender, DataTransferEventArgs e)
+		{
+			// Update the selected index.
+			splitsListView.SelectedIndex = ((SplitsViewModel)DataContext).CurrentSplit;
+
+			if (((SplitsViewModel)DataContext).RunInProgress)
+				statusText.Text = "Run In Progress";
+			else
+				statusText.Text = "Run not active";
 		}
 	}
 }

@@ -40,6 +40,10 @@ namespace UnitTest_ViewModel
 			mockModel.Setup(m => m.GetSplits(ChallengeName))
 				.Returns(modelSplits);
 
+			// Return an empty run list for this challenge.
+			mockModel.Setup(m => m.GetRuns(ChallengeName))
+				.Returns(new List<Run>());
+
 			// Create the challenge.
 			TestViewModel.CreateChallenge(ChallengeName, splits);
 
@@ -163,6 +167,10 @@ namespace UnitTest_ViewModel
 			mockModel.Setup(m => m.GetSplits(challengeName))
 				.Returns(modelSplits);
 
+			// Return an empty run list for the new challenge.
+			mockModel.Setup(m => m.GetRuns(challengeName))
+				.Returns(new List<Run>());
+
 			// ACT
 			TestViewModel.CreateChallenge(challengeName, splits);
 
@@ -200,6 +208,9 @@ namespace UnitTest_ViewModel
 			Assert.AreEqual(9999, TestViewModel.SplitList[4].DiffValue);
 			Assert.AreEqual(9999, TestViewModel.SplitList[4].CurrentPbValue);
 
+			// Has CurrentSplit been set correctly?
+			Assert.AreEqual(-1, TestViewModel.CurrentSplit);
+
 			// Has the user setting LastUsedChallenge been updated correctly?
 			mockSettings.Verify(us => us.SetUserSetting("LastUsedChallenge", challengeName));
 		}
@@ -235,6 +246,10 @@ namespace UnitTest_ViewModel
 			mockModel.Setup(m => m.GetSplits(newCurrentName))
 				.Returns(newSplits);
 
+			// Return an empty run list for any challenge.
+			mockModel.Setup(m => m.GetRuns(It.IsAny<string>()))
+				.Returns(new List<Run>());
+
 			// Specify the last used challenge.
 			mockSettings.Setup(us => us.GetUserSetting("LastUsedChallenge"))
 				.Returns("challenge 2");
@@ -252,6 +267,7 @@ namespace UnitTest_ViewModel
 
 			// ASSERT
 			Assert.AreEqual(newCurrentName, mySvm.CurrentChallenge);
+			Assert.AreEqual(-1, mySvm.CurrentSplit);
 			Assert.AreEqual(2, mySvm.SplitList.Count);
 			SplitVM testSplit = new SplitVM
 			{
@@ -352,6 +368,10 @@ namespace UnitTest_ViewModel
 			// be provided because CurrentChallenge looks at it.
 			mockModel.Setup(m => m.GetSplits(It.IsAny<string>()))
 				.Returns(new List<Split>());
+
+			// Return an empty run list for any challenge.
+			mockModel.Setup(m => m.GetRuns(It.IsAny<string>()))
+				.Returns(new List<Run>());
 
 			// ACT
 			// Delete the challenge.
@@ -522,6 +542,15 @@ namespace UnitTest_ViewModel
 			mockModel.Verify(mm => mm.Failure(challengeName), Times.Exactly(10 + 1));
 			mockModel.Verify(mm => mm.Success(challengeName), Times.Exactly(5 + 5));
 
+		}
+
+		[TestMethod]
+		[Ignore]
+		public void SwitchToChallengeWithRunInProgress()
+		{
+			// Create two challenges. Give the second challenge a run in progress.
+			// Start with the first challenge, then move to the second challenge.
+			// Verify CurrentSplit, among other things.
 		}
 	}
 }

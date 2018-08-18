@@ -33,7 +33,7 @@
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Column="0" Grid.Row="0">
             <TextBlock FontSize="18" Text="{Binding CurrentChallenge, NotifyOnTargetUpdated=True}" TargetUpdated="TextBlock_SourceUpdated"/>
-            <ListView Name="splitsListView" ItemsSource="{Binding SplitList}">
+            <ListView Name="splitsListView" ItemsSource="{Binding SplitList, NotifyOnTargetUpdated=True}" TargetUpdated="splitsListView_TargetUpdated">
                 <ListView.View>
                     <GridView AllowsColumnReorder="False" ColumnHeaderToolTip="Split Progress">
                         <GridViewColumn Header="Split" Width="215"

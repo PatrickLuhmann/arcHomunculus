@@ -55,9 +55,14 @@ namespace Homunculus_ViewModel
 					// Get the PB run for this challenge.
 					// TODO: Should this be a service that the Model provides?
 					List<Run> runList = Challenges.GetRuns(currentChallenge);
+					Run mostRecent = null;
 					Run runPB = null;
-					if (runList != null)
+					if (runList.Count != 0)
 					{
+						// First, grab the last run.
+						mostRecent = runList.Last();
+
+						// Then, find the PB, if any.
 						foreach (var run in runList)
 						{
 							if (run.PB)
@@ -83,10 +88,21 @@ namespace Homunculus_ViewModel
 						splitList.Add(new SplitVM
 						{
 							SplitName = mSplits[idx].Name,
-							CurrentValue = 0,
+							CurrentValue = (mostRecent == null) ? 0 : mostRecent.SplitCounts[idx],
 							DiffValue = splitPB, // TODO: I think this is going away.
 							CurrentPbValue = splitPB
 						});
+					}
+
+					if (mostRecent == null || mostRecent.Closed)
+					{
+						runInProgress = false;
+						currentSplit = -1;
+					}
+					else
+					{
+						runInProgress = true;
+						currentSplit = mostRecent.CurrentSplit;
 					}
 				}
 
@@ -97,6 +113,7 @@ namespace Homunculus_ViewModel
 				// We changed some of our public properties.
 				NotifyPropertyChanged("CurrentChallenge");
 				NotifyPropertyChanged("SplitList");
+				NotifyPropertyChanged("RunInProgress");
 			}
 		}
 
@@ -106,6 +123,9 @@ namespace Homunculus_ViewModel
 		private bool runInProgress = false;
 		public bool RunInProgress { get { return runInProgress; } }
 
+		private int currentSplit = 0;
+		public int CurrentSplit { get { return currentSplit; } }
+		
 		// TODO: Should these really be properties? What if the View want to use
 		// different words, or even a different language?
 		public string SuccessButtonText { get; set; }
@@ -130,14 +150,14 @@ namespace Homunculus_ViewModel
 			Challenges.Success(currentChallenge);
 
 			// Go to the next split.
-			CurrentSplit++;
+			currentSplit++;
 
 			// If we are past the end, then we have won the game.
 			if (CurrentSplit == SplitList.Count)
 			{
 				// TODO: Handle "game won" condition here.
 				runInProgress = false;
-				CurrentSplit = 0;
+				currentSplit = 0;
 
 				// TODO:If the current run is a PB, then update the PB
 				// values for each of the splits.
@@ -258,7 +278,7 @@ namespace Homunculus_ViewModel
 			}
 
 			// Reset current split number.
-			CurrentSplit = 0;
+			currentSplit = 0;
 
 			runInProgress = true;
 
@@ -341,8 +361,6 @@ namespace Homunculus_ViewModel
 		// This allows for unit testing via a mock.
 		private IUserSettings UserSettings;
 		private IHomunculusModel Challenges;
-
-		private int CurrentSplit = 0;
 #endregion
 
 		public event PropertyChangedEventHandler PropertyChanged;
