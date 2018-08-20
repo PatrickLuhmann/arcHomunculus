@@ -920,5 +920,261 @@ namespace UnitTest_Homunculus_Model
 			Assert.AreEqual(false, runs[0].Closed);
 			Assert.AreEqual(false, runs[0].PB);
 		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.ArgumentNullException))]
+		public void ModifyChallenge_NullChallengeName()
+		{
+			// ARRANGE
+			List<Split> SplitList = new List<Split>();
+			SplitList.Add(new Split { Handle = 1, Name = "split 1" });
+
+			// ACT
+			TestModel.ModifyChallenge(null, SplitList, "new challenge name");
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.ArgumentNullException))]
+		public void ModifyChallenge_NullChanges()
+		{
+			// ARRANGE
+
+			// ACT
+			TestModel.ModifyChallenge("test challenge", null, null);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.ArgumentException))]
+		public void ModifyChallenge_EmptySplitList()
+		{
+			// ARRANGE
+			List<Split> SplitList = new List<Split>();
+
+			// ACT
+			TestModel.ModifyChallenge("test challenge", SplitList, null);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.ArgumentException))]
+		public void ModifyChallenge_UnknownChallengeName()
+		{
+			// ARRANGE
+			List<Split> SplitList = new List<Split>();
+			SplitList.Add(new Split { Handle = 1, Name = "split 1" });
+
+			// ACT
+			TestModel.ModifyChallenge("this challenge does not exist", SplitList, "new challenge name");
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.ArgumentException))]
+		public void ModifyChallenge_ChallengeAlreadyExists()
+		{
+			// ARRANGE
+			TestModel.CreateChallenge("challenge 1", SplitNamesBefore);
+			TestModel.CreateChallenge("challenge 2", SplitNamesBefore);
+
+			// ACT
+			TestModel.ModifyChallenge("challenge 1", null, "challenge 2");
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(System.InvalidOperationException))]
+		public void ModifyChallenge_RunActive()
+		{
+			// ARRANGE
+			string challengeName = "new challenge";
+			TestModel.CreateChallenge(challengeName, SplitNamesBefore);
+			TestModel.StartNewRun(challengeName);
+
+			// ACT
+			TestModel.ModifyChallenge(challengeName, null, "different name");
+		}
+
+		[TestMethod]
+		public void ModifyChallenge_RenameSplit()
+		{
+			// ARRANGE
+
+			// Create a new challenge.
+			string challengeName = "new challenge";
+			TestModel.CreateChallenge(challengeName, SplitNamesBefore);
+
+			// Get the splits.
+			List<Split> SplitsAfter = TestModel.GetSplits(challengeName);
+
+			// ACT
+			string newSplitName = "this is a new name";
+			SplitsAfter[0].Name = newSplitName;
+			TestModel.ModifyChallenge(challengeName, SplitsAfter, null);
+
+			// ASSERT
+			ModelXml VerifyModel = new ModelXml();
+			VerifyModel.LoadDatabase(DefaultFilename);
+
+			List<Split> SplitsAfterAfter = VerifyModel.GetSplits(challengeName);
+
+			// Verify split names.
+			Assert.AreEqual(SplitsAfter.Count, SplitsAfterAfter.Count);
+			Assert.AreEqual(newSplitName, SplitsAfterAfter[0].Name);
+			Assert.AreEqual("two", SplitsAfterAfter[1].Name);
+			Assert.AreEqual("three", SplitsAfterAfter[2].Name);
+			Assert.AreEqual("four", SplitsAfterAfter[3].Name);
+
+			// Verify that Handle didn't change.
+			Assert.AreEqual(SplitsAfter[0].Handle, SplitsAfterAfter[0].Handle);
+			Assert.AreEqual(SplitsAfter[1].Handle, SplitsAfterAfter[1].Handle);
+			Assert.AreEqual(SplitsAfter[2].Handle, SplitsAfterAfter[2].Handle);
+			Assert.AreEqual(SplitsAfter[3].Handle, SplitsAfterAfter[3].Handle);
+		}
+
+		[TestMethod]
+		public void ModifyChallenge_RenameAllSplits()
+		{
+			// ARRANGE
+
+			// Create a new challenge.
+			string challengeName = "new challenge";
+			TestModel.CreateChallenge(challengeName, SplitNamesBefore);
+
+			// Get the splits.
+			List<Split> SplitsAfter = TestModel.GetSplits(challengeName);
+
+			// ACT
+			string newSplitName = "this is a new name";
+			foreach (var split in SplitsAfter)
+				split.Name = newSplitName;
+			TestModel.ModifyChallenge(challengeName, SplitsAfter, null);
+
+			// ASSERT
+			ModelXml VerifyModel = new ModelXml();
+			VerifyModel.LoadDatabase(DefaultFilename);
+
+			List<Split> SplitsAfterAfter = VerifyModel.GetSplits(challengeName);
+
+			// Verify split names.
+			Assert.AreEqual(SplitsAfter.Count, SplitsAfterAfter.Count);
+			Assert.AreEqual(newSplitName, SplitsAfterAfter[0].Name);
+			Assert.AreEqual(newSplitName, SplitsAfterAfter[1].Name);
+			Assert.AreEqual(newSplitName, SplitsAfterAfter[2].Name);
+			Assert.AreEqual(newSplitName, SplitsAfterAfter[3].Name);
+
+			// Verify that Handle didn't change.
+			Assert.AreEqual(SplitsAfter[0].Handle, SplitsAfterAfter[0].Handle);
+			Assert.AreEqual(SplitsAfter[1].Handle, SplitsAfterAfter[1].Handle);
+			Assert.AreEqual(SplitsAfter[2].Handle, SplitsAfterAfter[2].Handle);
+			Assert.AreEqual(SplitsAfter[3].Handle, SplitsAfterAfter[3].Handle);
+		}
+
+#if false
+		[TestMethod]
+		public void ModifyChallenge_AddOneSplitAtEnd()
+		{
+			// ARRANGE
+
+			// Create a new challenge.
+			string challengeName = "new challenge";
+			TestModel.CreateChallenge(challengeName, SplitNamesBefore);
+
+			// Get the splits.
+			List<Split> SplitsAfter = TestModel.GetSplits(challengeName);
+
+			// ACT
+			string newSplitName = "this is a new name";
+			SplitsAfter.Add(new Split { Name = newSplitName });
+			TestModel.ModifyChallenge(challengeName, SplitsAfter);
+
+			// ASSERT
+			List<Split> SplitsAfterAfter = TestModel.GetSplits(challengeName);
+
+			// Verify split names.
+			Assert.AreEqual(5, SplitsAfterAfter.Count);
+			Assert.AreEqual("one", SplitsAfterAfter[0].Name);
+			Assert.AreEqual("two", SplitsAfterAfter[1].Name);
+			Assert.AreEqual("three", SplitsAfterAfter[2].Name);
+			Assert.AreEqual("four", SplitsAfterAfter[3].Name);
+			Assert.AreEqual(newSplitName, SplitsAfterAfter[4].Name);
+
+			// Verify that Handle didn't change.
+			Assert.AreEqual(SplitsAfter[0].Handle, SplitsAfterAfter[0].Handle);
+			Assert.AreEqual(SplitsAfter[1].Handle, SplitsAfterAfter[1].Handle);
+			Assert.AreEqual(SplitsAfter[2].Handle, SplitsAfterAfter[2].Handle);
+			Assert.AreEqual(SplitsAfter[3].Handle, SplitsAfterAfter[3].Handle);
+			Assert.AreNotEqual(0, SplitsAfterAfter[4].Handle);
+		}
+#endif
+
+		[TestMethod]
+		public void ModifyChallenge_SwapTwoSplits()
+		{
+			// ARRANGE
+
+			// Create a new challenge.
+			string challengeName = "new challenge";
+			TestModel.CreateChallenge(challengeName, SplitNamesBefore);
+
+			// Get the splits.
+			List<Split> SplitsAfter = TestModel.GetSplits(challengeName);
+
+			// ACT
+			Split temp = SplitsAfter[2];
+			SplitsAfter[2] = SplitsAfter[3];
+			SplitsAfter[3] = temp;
+			TestModel.ModifyChallenge(challengeName, SplitsAfter, null);
+
+			// ASSERT
+			ModelXml VerifyModel = new ModelXml();
+			VerifyModel.LoadDatabase(DefaultFilename);
+
+			List<Split> SplitsAfterAfter = VerifyModel.GetSplits(challengeName);
+
+			// Verify split names.
+			Assert.AreEqual(SplitsAfter.Count, SplitsAfterAfter.Count);
+			Assert.AreEqual(SplitsAfter[0].Name, SplitsAfterAfter[0].Name);
+			Assert.AreEqual(SplitsAfter[1].Name, SplitsAfterAfter[1].Name);
+			Assert.AreEqual(SplitsAfter[3].Name, SplitsAfterAfter[2].Name);
+			Assert.AreEqual(SplitsAfter[2].Name, SplitsAfterAfter[3].Name);
+
+			// Verify that Handle didn't change.
+			Assert.AreEqual(SplitsAfter[0].Handle, SplitsAfterAfter[0].Handle);
+			Assert.AreEqual(SplitsAfter[1].Handle, SplitsAfterAfter[1].Handle);
+			Assert.AreEqual(SplitsAfter[3].Handle, SplitsAfterAfter[2].Handle);
+			Assert.AreEqual(SplitsAfter[2].Handle, SplitsAfterAfter[3].Handle);
+		}
+
+		[TestMethod]
+		public void ModifyChallenge_RenameChallenge()
+		{
+			string oldName = "challenge 1";
+			string newName = "challenge 2";
+			// ARRANGE
+			List<Split> SplitsAfter = TestModel.CreateChallenge(oldName, SplitNamesBefore);
+
+			// ACT
+			TestModel.ModifyChallenge(oldName, null, newName);
+
+			// ASSERT
+			ModelXml VerifyModel = new ModelXml();
+			VerifyModel.LoadDatabase(DefaultFilename);
+
+			List<string> challenges = VerifyModel.GetChallenges();
+			Assert.AreEqual(1, challenges.Count);
+			Assert.AreEqual(newName, challenges[0]);
+
+			List<Split> SplitsAfterAfter = VerifyModel.GetSplits(newName);
+
+			// Verify split names.
+			Assert.AreEqual(SplitsAfter.Count, SplitsAfterAfter.Count);
+			Assert.AreEqual(SplitsAfter[0].Name, SplitsAfterAfter[0].Name);
+			Assert.AreEqual(SplitsAfter[1].Name, SplitsAfterAfter[1].Name);
+			Assert.AreEqual(SplitsAfter[2].Name, SplitsAfterAfter[2].Name);
+			Assert.AreEqual(SplitsAfter[3].Name, SplitsAfterAfter[3].Name);
+
+			// Verify that Handle didn't change.
+			Assert.AreEqual(SplitsAfter[0].Handle, SplitsAfterAfter[0].Handle);
+			Assert.AreEqual(SplitsAfter[1].Handle, SplitsAfterAfter[1].Handle);
+			Assert.AreEqual(SplitsAfter[2].Handle, SplitsAfterAfter[2].Handle);
+			Assert.AreEqual(SplitsAfter[3].Handle, SplitsAfterAfter[3].Handle);
+		}
 	}
 }

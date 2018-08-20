@@ -191,6 +191,81 @@ namespace Homunculus_Model
 		}
 
 		/// <summary>
+		/// Modifies the specified challenge with the provided splits.
+		/// </summary>
+		/// <param name="ChallengeName"></param>
+		/// <param name="Splits"></param>
+		public void ModifyChallenge(string ChallengeName, List<Split> Splits, string NewChallengeName)
+		{
+			// Check for bad parameters.
+			if (ChallengeName == null || (Splits == null && NewChallengeName == null))
+				throw new ArgumentNullException();
+
+			if (Splits != null && Splits.Count == 0)
+				throw new ArgumentException();
+
+			DataRow[] drChallenge = ChallengeRuns.Tables["Challenges"]
+				.Select("Name = '" + ChallengeName + "'");
+
+			// Verify that the challenge was in the database.
+			if (drChallenge.Count() == 0)
+				throw new ArgumentException();
+
+			// Make sure there isn't already an active run for this challenge.
+			DataRow[] runRows = ChallengeRuns.Tables["Runs"]
+				.Select("ChallengeID = " + drChallenge[0]["ID"].ToString(),
+				"ID DESC");
+			if (runRows.Length != 0)
+			{
+				if (Convert.ToBoolean(runRows[0]["Closed"]) == false)
+					throw new InvalidOperationException();
+			}
+			
+			// Process challenge name change.
+			if (NewChallengeName != null && NewChallengeName != ChallengeName)
+			{
+				// Check for duplicate challenge name.
+				if (ChallengeRuns.Tables["Challenges"]
+								 .Select("Name = '" + NewChallengeName + "'")
+								 .Length != 0)
+					throw new ArgumentException();
+
+				drChallenge[0]["Name"] = NewChallengeName;
+			}
+
+			// Process split name changes and additions.
+			if (Splits != null)
+			{
+				for (int i = 0; i < Splits.Count; i++)
+				{
+					Split s = Splits[i];
+
+					// See if this split is in the database.
+					DataRow[] drSplit = ChallengeRuns.Tables["Splits"]
+					.Select("ID = " + s.Handle.ToString());
+					if (drSplit.Count() == 1)
+					{
+						// If so, sets its Name.
+						// NOTE: Assumes there is no point in checking to see if the
+						// Name is actually different.
+						drSplit[0]["Name"] = s.Name;
+					}
+					else
+					{
+						// If not, it is new, so add it.
+						DataRow dr = ChallengeRuns.Tables["Splits"].NewRow();
+						dr["Name"] = s.Name;
+						dr["ChallengeID"] = drChallenge[0]["ID"];
+						dr["IndexWithinChallenge"] = i;
+						ChallengeRuns.Tables["Splits"].Rows.Add(dr);
+					}
+				}
+			}
+
+			Save();
+		}
+
+		/// <summary>
 		/// Deletes the specified challenge from the database.
 		/// </summary>
 		/// <param name="ChallengeName">The name of the challenge</param>
