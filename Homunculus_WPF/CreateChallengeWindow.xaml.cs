@@ -25,17 +25,6 @@ namespace Homunculus_WPF
 			InitializeComponent();
 
 			DataContext = svm;
-
-			// Create the text list of splits.
-			// TODO: Think about this some more to see if there is a more elegant
-			// way to do this. My first attempt with bindings didn't work for
-			// some reason. Then again, I eventually want to move to a List
-			// that has rows that can be moved up/down via the mouse, so maybe
-			// there is no point in trying to improve the text box approach.
-			foreach (var split in ((SplitsViewModel)DataContext).SplitList)
-			{
-				splitsTextBox.Text += split.SplitName + Environment.NewLine;
-			}
 		}
 
 		private void addButton_Click(object sender, RoutedEventArgs e)
@@ -45,20 +34,14 @@ namespace Homunculus_WPF
 
 		private void okButton_Click(object sender, RoutedEventArgs e)
 		{
-			//((SplitsViewModel)DataContext).SetSplits(splitsTextBox.Text);
-
-			string name = challengeName.Text;
-			List<string> splits = new List<string>();
-			// Extract the individual lines, ignoring empty lines.
-			string[] lines = splitsTextBox.Text.Split(new string[] { Environment.NewLine },
-				StringSplitOptions.RemoveEmptyEntries);
-			foreach (string s in lines)
+			// Extract the names of the splits and put them into a List.
+			List<string> splitNames = new List<string>();
+			foreach (SplitVM split in splitsListBox.ItemsSource)
 			{
-				// Only add non-empty strings
-				if (s.Trim() != "")
-					splits.Add(s.Trim());
+				string name = split.SplitName;
+				splitNames.Add(name);
 			}
-			((SplitsViewModel)DataContext).CreateChallenge(name, splits);
+			((SplitsViewModel)DataContext).CreateChallenge(challengeName.Text, splitNames);
 
 			// NOTE: This causes the window to close automatically.
 			DialogResult = true;

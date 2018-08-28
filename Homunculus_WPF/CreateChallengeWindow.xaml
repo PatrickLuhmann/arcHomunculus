@@ -29,11 +29,6 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <TextBox Name="splitsTextBox"
-                     TextWrapping="Wrap"
-                     AcceptsReturn="True"
-                     VerticalScrollBarVisibility="Visible"
-                     />
             <StackPanel Orientation="Horizontal">
                 <Button Name="okButton" Margin="5" Click="okButton_Click" IsDefault="True">OK</Button>
                 <Button Name="cancelButton" Margin="5" IsCancel="True">Cancel</Button>
