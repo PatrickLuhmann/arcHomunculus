@@ -299,14 +299,20 @@ namespace Homunculus_ViewModel
 		/// <summary>
 		/// NOTE: This might be deprecated, or at least delayed.
 		/// </summary>
-		/// <param name="selectedSplit"></param>
-		public void AddSplitProc(int selectedSplit)
+		/// <param name="SelectedSplit"></param>
+		public void AddSplitProc(int SelectedSplit)
 		{
 			// TODO: Add the new item at an arbitrary point.
 			splitList.Add(new SplitVM { SplitName = "New Split" });
 			// TODO: Do I need to do something here to get the list to update in the UI?
 		}
-		
+
+		public void DeleteSplitProc(int SelectedSplit)
+		{
+			splitList.RemoveAt(SelectedSplit);
+
+		}
+
 		public void OnClosing(object s, CancelEventArgs e)
 		{
 			System.Diagnostics.Debug.WriteLine("Enter ViewModel::OnClosing");

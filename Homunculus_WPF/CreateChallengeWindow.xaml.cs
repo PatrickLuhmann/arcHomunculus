@@ -34,17 +34,34 @@ namespace Homunculus_WPF
 
 		private void okButton_Click(object sender, RoutedEventArgs e)
 		{
-			// Extract the names of the splits and put them into a List.
-			List<string> splitNames = new List<string>();
-			foreach (SplitVM split in splitsListBox.ItemsSource)
+			if (challengeName.Text != "")
 			{
-				string name = split.SplitName;
-				splitNames.Add(name);
+				// Extract the names of the splits and put them into a List.
+				List<string> splitNames = new List<string>();
+				foreach (SplitVM split in splitsListBox.ItemsSource)
+				{
+					string name = split.SplitName;
+					splitNames.Add(name);
+				}
+				if (splitNames.Count > 0)
+					((SplitsViewModel)DataContext).CreateChallenge(challengeName.Text, splitNames);
 			}
-			((SplitsViewModel)DataContext).CreateChallenge(challengeName.Text, splitNames);
+			// TODO: Inform the user if the challenge wasn't created?
 
 			// NOTE: This causes the window to close automatically.
 			DialogResult = true;
+		}
+
+		private void deleteButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (splitsListBox.SelectedIndex != -1)
+				((SplitsViewModel)DataContext).DeleteSplitProc(splitsListBox.SelectedIndex);
+		}
+
+		private void splitsListBoxItem_PreviewGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+		{
+			ListBoxItem item = sender as ListBoxItem;
+			item.IsSelected = true;
 		}
 	}
 }
