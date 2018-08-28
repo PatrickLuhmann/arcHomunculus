@@ -310,7 +310,17 @@ namespace Homunculus_ViewModel
 		public void DeleteSplitProc(int SelectedSplit)
 		{
 			splitList.RemoveAt(SelectedSplit);
+		}
 
+		public void MoveUpSplitProc(int SelectedSplit)
+		{
+			if (SelectedSplit > 0)
+			{
+				SplitVM item = splitList[SelectedSplit];
+				splitList.RemoveAt(SelectedSplit);
+				splitList.Insert(SelectedSplit - 1, item);
+				NotifyPropertyChanged("SplitList");
+			}
 		}
 
 		public void OnClosing(object s, CancelEventArgs e)

@@ -16,7 +16,7 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Button Click="addButton_Click" Margin="5">Add</Button>
-                <Button Margin="5">Move Up</Button>
+                <Button Click="moveUpButton_Click" Margin="5">Move Up</Button>
                 <Button Margin="5">Move Down</Button>
                 <Button Click="deleteButton_Click" Margin="5">Delete</Button>
             </StackPanel>
