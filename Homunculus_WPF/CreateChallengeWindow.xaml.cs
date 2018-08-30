@@ -22,6 +22,8 @@ namespace Homunculus_WPF
 	/// </summary>
 	public partial class CreateChallengeWindow : Window
 	{
+		EditMode Mode;
+
 		public CreateChallengeWindow(SplitsViewModel svm, EditMode mode)
 		{
 			InitializeComponent();
@@ -29,7 +31,8 @@ namespace Homunculus_WPF
 			DataContext = svm;
 
 			// Set window behavior based on mode.
-			if (mode == EditMode.Edit)
+			Mode = mode;
+			if (Mode == EditMode.Edit)
 			{
 				this.Title = "Edit Challenge";
 				challengeName.Text = ((SplitsViewModel)DataContext).CurrentChallenge;
@@ -41,7 +44,7 @@ namespace Homunculus_WPF
 				moveDownButton.IsEnabled = true;
 				// TODO: Implement Rename feature.
 			}
-			else if (mode == EditMode.Clone)
+			else if (Mode == EditMode.Clone)
 			{
 				this.Title = "Create Challenge";
 				challengeName.Text = "New Challenge";
@@ -66,19 +69,22 @@ namespace Homunculus_WPF
 
 		private void okButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (challengeName.Text != "")
+			if (Mode == EditMode.Clone)
 			{
-				// Extract the names of the splits and put them into a List.
-				List<string> splitNames = new List<string>();
-				foreach (SplitVM split in splitsListBox.ItemsSource)
+				if (challengeName.Text != "")
 				{
-					string name = split.SplitName;
-					splitNames.Add(name);
+					// Extract the names of the splits and put them into a List.
+					List<string> splitNames = new List<string>();
+					foreach (SplitVM split in splitsListBox.ItemsSource)
+					{
+						string name = split.SplitName;
+						splitNames.Add(name);
+					}
+					if (splitNames.Count > 0)
+						((SplitsViewModel)DataContext).CreateChallenge(challengeName.Text, splitNames);
 				}
-				if (splitNames.Count > 0)
-					((SplitsViewModel)DataContext).CreateChallenge(challengeName.Text, splitNames);
+				// TODO: Inform the user if the challenge wasn't created?
 			}
-			// TODO: Inform the user if the challenge wasn't created?
 
 			// NOTE: This causes the window to close automatically.
 			DialogResult = true;

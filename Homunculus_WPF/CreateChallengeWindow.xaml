@@ -35,7 +35,7 @@
                 </ListBox.ItemContainerStyle>
             </ListBox>
             <StackPanel Orientation="Horizontal">
-                <Button Name="okButton" Margin="5" Click="okButton_Click" IsDefault="True">OK</Button>
+                <Button Name="okButton" Margin="5" Click="okButton_Click" IsDefault="False">OK</Button>
                 <Button Name="cancelButton" Margin="5" IsCancel="True">Cancel</Button>
             </StackPanel>
         </StackPanel>
