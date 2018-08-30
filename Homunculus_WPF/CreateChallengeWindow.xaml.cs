@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -17,25 +20,50 @@ namespace Homunculus_WPF
 {
 	public enum EditMode { Edit = 0, Clone };
 
+	public class HackViewModel : INotifyPropertyChanged
+	{
+		private ObservableCollection<SplitVM> hackSplitList;
+		public ObservableCollection<SplitVM> HackSplitList
+		{
+			get { return hackSplitList; }
+			set { hackSplitList = value; NotifyPropertyChanged("HackSplitList"); }
+		}
+
+		public event PropertyChangedEventHandler PropertyChanged;
+		private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+		{
+			if (PropertyChanged != null)
+			{
+				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+
 	/// <summary>
 	/// Interaction logic for CreateChallengeWindow.xaml
 	/// </summary>
 	public partial class CreateChallengeWindow : Window
 	{
 		EditMode Mode;
+		HackViewModel myHVM;
 
 		public CreateChallengeWindow(SplitsViewModel svm, EditMode mode)
 		{
 			InitializeComponent();
 
-			DataContext = svm;
+			myHVM = (HackViewModel)DataContext;
+			myHVM.HackSplitList = new ObservableCollection<SplitVM>();
+			foreach (var s in svm.SplitList)
+			{
+				myHVM.HackSplitList.Add(s);
+			}
 
 			// Set window behavior based on mode.
 			Mode = mode;
 			if (Mode == EditMode.Edit)
 			{
 				this.Title = "Edit Challenge";
-				challengeName.Text = ((SplitsViewModel)DataContext).CurrentChallenge;
+				challengeName.Text = svm.CurrentChallenge;
 
 				// Only allow Up, Down, and Rename.
 				addButton.IsEnabled = false;
@@ -64,7 +92,7 @@ namespace Homunculus_WPF
 
 		private void addButton_Click(object sender, RoutedEventArgs e)
 		{
-			((SplitsViewModel)DataContext).AddSplitProc(splitsListBox.SelectedIndex);
+			//((SplitsViewModel)DataContext).AddSplitProc(splitsListBox.SelectedIndex);
 		}
 
 		private void okButton_Click(object sender, RoutedEventArgs e)
@@ -81,9 +109,15 @@ namespace Homunculus_WPF
 						splitNames.Add(name);
 					}
 					if (splitNames.Count > 0)
-						((SplitsViewModel)DataContext).CreateChallenge(challengeName.Text, splitNames);
+					{
+						//((SplitsViewModel)DataContext).CreateChallenge(challengeName.Text, splitNames);
+					}
 				}
 				// TODO: Inform the user if the challenge wasn't created?
+			}
+			else
+			{
+				// TODO: Implement Edit.
 			}
 
 			// NOTE: This causes the window to close automatically.
@@ -93,7 +127,9 @@ namespace Homunculus_WPF
 		private void deleteButton_Click(object sender, RoutedEventArgs e)
 		{
 			if (splitsListBox.SelectedIndex != -1)
-				((SplitsViewModel)DataContext).DeleteSplitProc(splitsListBox.SelectedIndex);
+			{
+				//((SplitsViewModel)DataContext).DeleteSplitProc(splitsListBox.SelectedIndex);
+			}
 		}
 
 		private void splitsListBoxItem_PreviewGotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
@@ -108,7 +144,15 @@ namespace Homunculus_WPF
 			{
 				// Need to save the index because changing the list resets it to -1.
 				int index = splitsListBox.SelectedIndex;
+#if false
 				((SplitsViewModel)DataContext).MoveUpSplitProc(splitsListBox.SelectedIndex);
+#else
+				SplitVM item = myHVM.HackSplitList[index];
+				myHVM.HackSplitList.RemoveAt(index);
+				myHVM.HackSplitList.Insert(index - 1, item);
+				//NotifyPropertyChanged("SplitList");
+#endif
+
 				splitsListBox.SelectedIndex = index - 1;
 			}
 		}
@@ -119,7 +163,7 @@ namespace Homunculus_WPF
 			{
 				// Need to save the index because changing the list resets it to -1.
 				int index = splitsListBox.SelectedIndex;
-				((SplitsViewModel)DataContext).MoveDownSplitProc(splitsListBox.SelectedIndex);
+				//((SplitsViewModel)DataContext).MoveDownSplitProc(splitsListBox.SelectedIndex);
 				splitsListBox.SelectedIndex = index + 1;
 			}
 		}

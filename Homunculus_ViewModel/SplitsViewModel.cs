@@ -223,6 +223,11 @@ namespace Homunculus_ViewModel
 			NotifyPropertyChanged("ChallengeList");
 		}
 
+		public void EditChallenge(string Name, ObservableCollection<SplitVM> SplitList)
+		{
+
+		}
+
 		/// <summary>
 		/// Delete the given challenge from the database.
 		/// </summary>

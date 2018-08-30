@@ -8,6 +8,9 @@
         mc:Ignorable="d"
         Title="CreateChallengeWindow" Height="450" Width="800"
         WindowStartupLocation="CenterOwner">
+    <Window.DataContext>
+        <local:HackViewModel/>
+    </Window.DataContext>
     <Grid>
         <StackPanel>
             <StackPanel Orientation="Horizontal">
@@ -20,7 +23,7 @@
                 <Button Name="moveDownButton" Click="moveDownButton_Click" Margin="5">Move Down</Button>
                 <Button Name="deleteButton" Click="deleteButton_Click" Margin="5">Delete</Button>
             </StackPanel>
-            <ListBox Name="splitsListBox" ItemsSource="{Binding SplitList}">
+            <ListBox Name="splitsListBox" ItemsSource="{Binding HackSplitList}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
