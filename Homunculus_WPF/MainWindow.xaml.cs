@@ -60,7 +60,7 @@ namespace Homunculus_WPF
 		private void createChallengeButton_Click(object sender, RoutedEventArgs e)
 		{
 			// Display Create Challenge window.
-			var wnd = new CreateChallengeWindow((SplitsViewModel)DataContext);
+			var wnd = new CreateChallengeWindow((SplitsViewModel)DataContext, EditMode.Clone);
 			Nullable<bool> ret = wnd.ShowDialog(); // ShowDialog is blocking.
 
 			if (ret == true)
@@ -151,6 +151,20 @@ namespace Homunculus_WPF
 				statusText.Text = "Run In Progress";
 			else
 				statusText.Text = "Run not active";
+		}
+
+		private void editChallengeButton_Click(object sender, RoutedEventArgs e)
+		{
+			// Display Edit Challenge window.
+			var wnd = new CreateChallengeWindow((SplitsViewModel)DataContext, EditMode.Edit);
+			Nullable<bool> ret = wnd.ShowDialog(); // ShowDialog is blocking.
+
+			if (ret == true)
+			{
+				// For now, editing the splits will reset the current run. This is likely
+				// not what the user wants, but we need to start somewhere.
+				splitsListView.SelectedIndex = 0;
+			}
 		}
 	}
 }

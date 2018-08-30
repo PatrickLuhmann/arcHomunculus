@@ -15,16 +15,48 @@ using Homunculus_ViewModel;
 
 namespace Homunculus_WPF
 {
+	public enum EditMode { Edit = 0, Clone };
+
 	/// <summary>
 	/// Interaction logic for CreateChallengeWindow.xaml
 	/// </summary>
 	public partial class CreateChallengeWindow : Window
 	{
-		public CreateChallengeWindow(SplitsViewModel svm)
+		public CreateChallengeWindow(SplitsViewModel svm, EditMode mode)
 		{
 			InitializeComponent();
 
 			DataContext = svm;
+
+			// Set window behavior based on mode.
+			if (mode == EditMode.Edit)
+			{
+				this.Title = "Edit Challenge";
+				challengeName.Text = ((SplitsViewModel)DataContext).CurrentChallenge;
+
+				// Only allow Up, Down, and Rename.
+				addButton.IsEnabled = false;
+				deleteButton.IsEnabled = false;
+				moveUpButton.IsEnabled = true;
+				moveDownButton.IsEnabled = true;
+				// TODO: Implement Rename feature.
+			}
+			else if (mode == EditMode.Clone)
+			{
+				this.Title = "Create Challenge";
+				challengeName.Text = "New Challenge";
+
+				// All features are available.
+				addButton.IsEnabled = true;
+				deleteButton.IsEnabled = true;
+				moveUpButton.IsEnabled = true;
+				moveDownButton.IsEnabled = true;
+				// TODO: Implement Rename feature.
+			}
+			else
+			{
+				this.Title = "ERROR: Unknown edit mode";
+			}
 		}
 
 		private void addButton_Click(object sender, RoutedEventArgs e)
