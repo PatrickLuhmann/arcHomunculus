@@ -314,11 +314,22 @@ namespace Homunculus_ViewModel
 
 		public void MoveUpSplitProc(int SelectedSplit)
 		{
-			if (SelectedSplit > 0)
+			if (SelectedSplit > 0 && SelectedSplit < splitList.Count)
 			{
 				SplitVM item = splitList[SelectedSplit];
 				splitList.RemoveAt(SelectedSplit);
 				splitList.Insert(SelectedSplit - 1, item);
+				NotifyPropertyChanged("SplitList");
+			}
+		}
+
+		public void MoveDownSplitProc(int SelectedSplit)
+		{
+			if (SelectedSplit >= 0 && SelectedSplit < (splitList.Count - 1))
+			{
+				SplitVM item = splitList[SelectedSplit];
+				splitList.RemoveAt(SelectedSplit);
+				splitList.Insert(SelectedSplit + 1, item);
 				NotifyPropertyChanged("SplitList");
 			}
 		}

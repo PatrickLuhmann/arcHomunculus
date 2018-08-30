@@ -74,5 +74,16 @@ namespace Homunculus_WPF
 				splitsListBox.SelectedIndex = index - 1;
 			}
 		}
+
+		private void moveDownButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (splitsListBox.SelectedIndex < (splitsListBox.Items.Count - 1))
+			{
+				// Need to save the index because changing the list resets it to -1.
+				int index = splitsListBox.SelectedIndex;
+				((SplitsViewModel)DataContext).MoveDownSplitProc(splitsListBox.SelectedIndex);
+				splitsListBox.SelectedIndex = index + 1;
+			}
+		}
 	}
 }

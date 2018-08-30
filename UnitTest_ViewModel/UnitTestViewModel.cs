@@ -552,5 +552,93 @@ namespace UnitTest_ViewModel
 			// Start with the first challenge, then move to the second challenge.
 			// Verify CurrentSplit, among other things.
 		}
+
+		[TestMethod]
+		public void MoveUpSplitProc_Basic()
+		{
+			// ARRANGE
+			string challengeName = "new challenge";
+			CreateBasicChallenge(challengeName);
+
+			// ACT
+			TestViewModel.MoveUpSplitProc(1);
+
+			// ASSERT
+			Assert.AreEqual(5, TestViewModel.SplitList.Count);
+			Assert.AreEqual("split 2", TestViewModel.SplitList[0].SplitName);
+			Assert.AreEqual("split 1", TestViewModel.SplitList[1].SplitName);
+			Assert.AreEqual("split 3", TestViewModel.SplitList[2].SplitName);
+			Assert.AreEqual("split 4", TestViewModel.SplitList[3].SplitName);
+			Assert.AreEqual("split 5", TestViewModel.SplitList[4].SplitName);
+
+			// ACT II
+			TestViewModel.MoveUpSplitProc(4);
+			TestViewModel.MoveUpSplitProc(3);
+
+			// ASSERT
+			Assert.AreEqual(5, TestViewModel.SplitList.Count);
+			Assert.AreEqual("split 2", TestViewModel.SplitList[0].SplitName);
+			Assert.AreEqual("split 1", TestViewModel.SplitList[1].SplitName);
+			Assert.AreEqual("split 5", TestViewModel.SplitList[2].SplitName);
+			Assert.AreEqual("split 3", TestViewModel.SplitList[3].SplitName);
+			Assert.AreEqual("split 4", TestViewModel.SplitList[4].SplitName);
+
+			// ACT III
+			// Invalid values are ignored; no exception is thrown.
+			TestViewModel.MoveUpSplitProc(-1);
+			TestViewModel.MoveUpSplitProc(5);
+
+			// ASSERT
+			Assert.AreEqual(5, TestViewModel.SplitList.Count);
+			Assert.AreEqual("split 2", TestViewModel.SplitList[0].SplitName);
+			Assert.AreEqual("split 1", TestViewModel.SplitList[1].SplitName);
+			Assert.AreEqual("split 5", TestViewModel.SplitList[2].SplitName);
+			Assert.AreEqual("split 3", TestViewModel.SplitList[3].SplitName);
+			Assert.AreEqual("split 4", TestViewModel.SplitList[4].SplitName);
+		}
+
+		[TestMethod]
+		public void MoveDownSplitProc_Basic()
+		{
+			// ARRANGE
+			string challengeName = "new challenge";
+			CreateBasicChallenge(challengeName);
+
+			// ACT
+			TestViewModel.MoveDownSplitProc(3);
+
+			// ASSERT
+			Assert.AreEqual(5, TestViewModel.SplitList.Count);
+			Assert.AreEqual("split 1", TestViewModel.SplitList[0].SplitName);
+			Assert.AreEqual("split 2", TestViewModel.SplitList[1].SplitName);
+			Assert.AreEqual("split 3", TestViewModel.SplitList[2].SplitName);
+			Assert.AreEqual("split 5", TestViewModel.SplitList[3].SplitName);
+			Assert.AreEqual("split 4", TestViewModel.SplitList[4].SplitName);
+
+			// ACT II
+			TestViewModel.MoveDownSplitProc(0);
+			TestViewModel.MoveDownSplitProc(1);
+
+			// ASSERT
+			Assert.AreEqual(5, TestViewModel.SplitList.Count);
+			Assert.AreEqual("split 2", TestViewModel.SplitList[0].SplitName);
+			Assert.AreEqual("split 3", TestViewModel.SplitList[1].SplitName);
+			Assert.AreEqual("split 1", TestViewModel.SplitList[2].SplitName);
+			Assert.AreEqual("split 5", TestViewModel.SplitList[3].SplitName);
+			Assert.AreEqual("split 4", TestViewModel.SplitList[4].SplitName);
+
+			// ACT III
+			// Invalid values are ignored; no exception is thrown.
+			TestViewModel.MoveDownSplitProc(-1);
+			TestViewModel.MoveDownSplitProc(5);
+
+			// ASSERT
+			Assert.AreEqual(5, TestViewModel.SplitList.Count);
+			Assert.AreEqual("split 2", TestViewModel.SplitList[0].SplitName);
+			Assert.AreEqual("split 3", TestViewModel.SplitList[1].SplitName);
+			Assert.AreEqual("split 1", TestViewModel.SplitList[2].SplitName);
+			Assert.AreEqual("split 5", TestViewModel.SplitList[3].SplitName);
+			Assert.AreEqual("split 4", TestViewModel.SplitList[4].SplitName);
+		}
 	}
 }
