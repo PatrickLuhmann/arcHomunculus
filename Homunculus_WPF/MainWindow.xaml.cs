@@ -61,6 +61,7 @@ namespace Homunculus_WPF
 		{
 			// Display Create Challenge window.
 			var wnd = new CreateChallengeWindow((SplitsViewModel)DataContext, EditMode.Clone);
+			wnd.SizeToContent = SizeToContent.WidthAndHeight;
 			Nullable<bool> ret = wnd.ShowDialog(); // ShowDialog is blocking.
 
 			if (ret == true)

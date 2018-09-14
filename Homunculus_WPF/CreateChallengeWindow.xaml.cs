@@ -95,6 +95,10 @@ namespace Homunculus_WPF
 		private void addButton_Click(object sender, RoutedEventArgs e)
 		{
 			//((SplitsViewModel)DataContext).AddSplitProc(splitsListBox.SelectedIndex);
+			int idx = splitsListBox.SelectedIndex;
+			if (idx < 0)
+				idx = 0;
+			myHVM.HackSplitList.Insert(idx, new SplitVM { Handle = 0, SplitName = "New Split", CurrentValue = 0, CurrentPbValue = 0 });
 		}
 
 		private void okButton_Click(object sender, RoutedEventArgs e)
@@ -112,10 +116,22 @@ namespace Homunculus_WPF
 					}
 					if (splitNames.Count > 0)
 					{
-						//((SplitsViewModel)DataContext).CreateChallenge(challengeName.Text, splitNames);
+						try
+						{
+							Svm.CreateChallenge(challengeName.Text, splitNames);
+							DialogResult = true;
+						}
+						catch (ArgumentException)
+						{
+							// Inform the user that they need to change the challenge name.
+							MessageBox.Show("ERROR: The name of the challenge must be unique.", "Bad Challenge Name", MessageBoxButton.OK, MessageBoxImage.Error);
+						}
 					}
+					else
+						MessageBox.Show("ERROR: The challenge must have at least one split.", "Empty Split List", MessageBoxButton.OK, MessageBoxImage.Error);
 				}
-				// TODO: Inform the user if the challenge wasn't created?
+				else
+					MessageBox.Show("ERROR: The challenge must have a name.", "Empty Challenge Name", MessageBoxButton.OK, MessageBoxImage.Error);
 			}
 			else
 			{
@@ -127,7 +143,7 @@ namespace Homunculus_WPF
 					// NOTE: This causes the window to close automatically.
 					DialogResult = true;
 				}
-				catch (ArgumentException exc)
+				catch (ArgumentException)
 				{
 					// Inform the user that they need to change the challenge name.
 					MessageBox.Show("ERROR: The name of the challenge must be unique.", "Bad Challenge Name", MessageBoxButton.OK, MessageBoxImage.Error);
