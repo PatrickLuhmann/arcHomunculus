@@ -732,7 +732,7 @@ namespace UnitTest_ViewModel
 			{
 				modelSplits.Add(new Split { Handle = 0, Name = s.SplitName });
 			}
-			mockModel.Setup(m => m.GetSplits(testChal))
+			mockModel.Setup(mm => mm.GetSplits(testChal))
 				.Returns(modelSplits);
 
 			// ACT
@@ -756,6 +756,182 @@ namespace UnitTest_ViewModel
 			{
 				// The name is different.
 				Assert.AreEqual(origSplits[i].SplitName + "this is a test", actSplits[i].SplitName);
+				// The rest is the same.
+				Assert.AreEqual(origSplits[i].Handle, actSplits[i].Handle);
+				Assert.AreEqual(origSplits[i].CurrentValue, actSplits[i].CurrentValue);
+				Assert.AreEqual(origSplits[i].DiffValue, actSplits[i].DiffValue);
+				Assert.AreEqual(origSplits[i].CurrentPbValue, actSplits[i].CurrentPbValue);
+			}
+
+			// TODO: Other properties?
+		}
+
+		[TestMethod]
+		public void RearrangeChallenge_MoveSplits()
+		{
+			// ARRANGE
+			string testChal = "test challenge";
+			CreateBasicChallenge(testChal);
+
+			ObservableCollection<SplitVM> origSplits = new ObservableCollection<SplitVM>();
+			ObservableCollection<SplitVM> testSplits = new ObservableCollection<SplitVM>();
+			foreach (var s in TestViewModel.SplitList)
+			{
+				// Save a copy of the splits as they were. Must be a true new object,
+				// otherwise it will see the change to be made and the asserts
+				// will not work correctly.
+				origSplits.Add(new SplitVM
+				{
+					Handle = s.Handle,
+					SplitName = s.SplitName,
+					CurrentValue = s.CurrentValue,
+					DiffValue = s.DiffValue,
+					CurrentPbValue = s.CurrentPbValue
+				});
+
+				// Create the new split list we will be passing to the MUT.
+				testSplits.Add(new SplitVM
+				{
+					Handle = s.Handle,
+					SplitName = s.SplitName,
+					CurrentValue = s.CurrentValue,
+					DiffValue = s.DiffValue,
+					CurrentPbValue = s.CurrentPbValue
+				});
+			}
+
+			// Move the testSplits around.
+			SplitVM item;
+			item = testSplits[0];
+			testSplits.RemoveAt(0);
+			testSplits.Insert(4, item);
+			item = testSplits[0];
+			testSplits.RemoveAt(0);
+			testSplits.Insert(3, item);
+			item = testSplits[0];
+			testSplits.RemoveAt(0);
+			testSplits.Insert(2, item);
+			item = testSplits[0];
+			testSplits.RemoveAt(0);
+			testSplits.Insert(1, item);
+
+			// Prepare the list of Split objects that the mock Model
+			// will return during RearrangeChallenge().
+			List<Split> modelSplits = new List<Split>();
+			foreach (var s in testSplits)
+			{
+				modelSplits.Add(new Split { Handle = 0, Name = s.SplitName });
+			}
+			mockModel.Setup(mm => mm.GetSplits(testChal))
+				.Returns(modelSplits);
+
+			// ACT
+			TestViewModel.RearrangeChallenge(testChal, testSplits);
+
+			// ASSERT
+			mockModel.Verify(mm => mm.ModifyChallenge(testChal,
+				It.Is<List<Split>>(l => FunkyTest(testSplits, l)), testChal));
+
+			// Property: ChallengeList - no change
+			Assert.AreEqual(1, TestViewModel.ChallengeList.Count);
+			Assert.AreEqual(testChal, TestViewModel.ChallengeList[0]);
+
+			// Property: CurrentChallenge - no change
+			Assert.AreEqual(testChal, TestViewModel.CurrentChallenge);
+
+			// Property: SplitList - verify new names
+			ObservableCollection<SplitVM> actSplits = TestViewModel.SplitList;
+			Assert.AreEqual(testSplits.Count, actSplits.Count);
+			for (int i = 0; i < actSplits.Count; i++)
+			{
+				// The name is different.
+				Assert.AreEqual(origSplits[4-i].SplitName, actSplits[i].SplitName);
+				// The rest is the same.
+				Assert.AreEqual(origSplits[4-i].Handle, actSplits[i].Handle);
+				Assert.AreEqual(origSplits[4-i].CurrentValue, actSplits[i].CurrentValue);
+				Assert.AreEqual(origSplits[4-i].DiffValue, actSplits[i].DiffValue);
+				Assert.AreEqual(origSplits[4-i].CurrentPbValue, actSplits[i].CurrentPbValue);
+			}
+
+			// TODO: Other properties?
+		}
+
+		[TestMethod]
+		public void RearrangeChallenge_ChangeChallengeName()
+		{
+			// ARRANGE
+			string testChal = "test challenge";
+			CreateBasicChallenge(testChal);
+			string newChallengeName = "new challenge name";
+
+			ObservableCollection<SplitVM> origSplits = new ObservableCollection<SplitVM>();
+			ObservableCollection<SplitVM> testSplits = new ObservableCollection<SplitVM>();
+			foreach (var s in TestViewModel.SplitList)
+			{
+				// Save a copy of the splits as they were. Must be a true new object,
+				// otherwise it will see the change to be made and the asserts
+				// will not work correctly.
+				origSplits.Add(new SplitVM
+				{
+					Handle = s.Handle,
+					SplitName = s.SplitName,
+					CurrentValue = s.CurrentValue,
+					DiffValue = s.DiffValue,
+					CurrentPbValue = s.CurrentPbValue
+				});
+
+				// Create the new split list we will be passing to the MUT.
+				testSplits.Add(new SplitVM
+				{
+					Handle = s.Handle,
+					SplitName = s.SplitName,
+					CurrentValue = s.CurrentValue,
+					DiffValue = s.DiffValue,
+					CurrentPbValue = s.CurrentPbValue
+				});
+			}
+
+			// Set new list of challenge names. This needs to be a new object.
+			List<string> newNameList = new List<string>();
+			newNameList.Add(newChallengeName);
+			mockModel.Setup(m => m.GetChallenges())
+				.Returns(newNameList);
+
+			// Prepare the list of Split objects that the mock Model
+			// will return during RearrangeChallenge().
+			List<Split> modelSplits = new List<Split>();
+			foreach (var s in testSplits)
+			{
+				modelSplits.Add(new Split { Handle = s.Handle, Name = s.SplitName });
+			}
+			mockModel.Setup(mm => mm.GetSplits(newChallengeName))
+				.Returns(modelSplits);
+			
+			// Return an empty run list for this challenge.
+			mockModel.Setup(m => m.GetRuns(newChallengeName))
+				.Returns(new List<Run>());
+
+			// ACT
+			TestViewModel.RearrangeChallenge(newChallengeName, testSplits);
+
+			// ASSERT
+			mockModel.Verify(mm => mm.ModifyChallenge(testChal,
+				It.Is<List<Split>>(l => FunkyTest(testSplits, l)), newChallengeName));
+
+			// Property: ChallengeList - the name has changed
+			Assert.AreEqual(1, TestViewModel.ChallengeList.Count);
+			Assert.AreEqual(newChallengeName, TestViewModel.ChallengeList[0]);
+
+			// Property: CurrentChallenge - the name has changed
+			Assert.AreEqual(newChallengeName, TestViewModel.CurrentChallenge);
+
+			// Property: SplitList - no change
+			ObservableCollection<SplitVM> actSplits = TestViewModel.SplitList;
+			Assert.AreEqual(origSplits.Count, actSplits.Count);
+			for (int i = 0; i < actSplits.Count; i++)
+			{
+				// The name is different.
+				Assert.AreEqual(origSplits[i].SplitName, actSplits[i].SplitName);
 				// The rest is the same.
 				Assert.AreEqual(origSplits[i].Handle, actSplits[i].Handle);
 				Assert.AreEqual(origSplits[i].CurrentValue, actSplits[i].CurrentValue);

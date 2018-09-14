@@ -243,10 +243,16 @@ namespace Homunculus_ViewModel
 			Challenges.ModifyChallenge(CurrentChallenge, newSplits, Name);
 
 			// TODO: Update challenge list because the name might have changed.
+			challengeList = Challenges.GetChallenges();
 
 			// Update split list because the names and/or order might have changed.
 			CurrentChallenge = ""; //  hack because CurrentChallenge name isn't different
 			CurrentChallenge = Name;
+			
+			// We changed some of our public properties.
+			NotifyPropertyChanged("CurrentChallenge");
+			NotifyPropertyChanged("ChallengeList");
+			NotifyPropertyChanged("SplitList");
 		}
 
 		/// <summary>

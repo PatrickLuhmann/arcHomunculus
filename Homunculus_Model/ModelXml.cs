@@ -194,14 +194,14 @@ namespace Homunculus_Model
 		/// Modifies the specified challenge with the provided splits.
 		/// </summary>
 		/// <param name="ChallengeName"></param>
-		/// <param name="Splits"></param>
-		public void ModifyChallenge(string ChallengeName, List<Split> Splits, string NewChallengeName)
+		/// <param name="NewSplits"></param>
+		public void ModifyChallenge(string ChallengeName, List<Split> NewSplits, string NewChallengeName)
 		{
 			// Check for bad parameters.
-			if (ChallengeName == null || (Splits == null && NewChallengeName == null))
+			if (ChallengeName == null || (NewSplits == null && NewChallengeName == null))
 				throw new ArgumentNullException();
 
-			if (Splits != null && Splits.Count == 0)
+			if (NewSplits != null && NewSplits.Count == 0)
 				throw new ArgumentException();
 
 			DataRow[] drChallenge = ChallengeRuns.Tables["Challenges"]
@@ -234,11 +234,11 @@ namespace Homunculus_Model
 			}
 
 			// Process split name changes and additions.
-			if (Splits != null)
+			if (NewSplits != null)
 			{
-				for (int i = 0; i < Splits.Count; i++)
+				for (int i = 0; i < NewSplits.Count; i++)
 				{
-					Split s = Splits[i];
+					Split s = NewSplits[i];
 
 					// See if this split is in the database.
 					DataRow[] drSplit = ChallengeRuns.Tables["Splits"]
@@ -249,6 +249,8 @@ namespace Homunculus_Model
 						// NOTE: Assumes there is no point in checking to see if the
 						// Name is actually different.
 						drSplit[0]["Name"] = s.Name;
+						// Index might also be different.
+						drSplit[0]["IndexWithinChallenge"] = i;
 					}
 					else
 					{

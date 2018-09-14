@@ -1117,10 +1117,13 @@ namespace UnitTest_Homunculus_Model
 			List<Split> SplitsAfter = TestModel.GetSplits(challengeName);
 
 			// ACT
-			Split temp = SplitsAfter[2];
-			SplitsAfter[2] = SplitsAfter[3];
-			SplitsAfter[3] = temp;
-			TestModel.ModifyChallenge(challengeName, SplitsAfter, null);
+			List<Split> newSplitOrder = new List<Split>();
+			newSplitOrder.Add(new Split { Handle = SplitsAfter[0].Handle, Name = SplitsAfter[0].Name });
+			newSplitOrder.Add(new Split { Handle = SplitsAfter[1].Handle, Name = SplitsAfter[1].Name });
+			newSplitOrder.Add(new Split { Handle = SplitsAfter[3].Handle, Name = SplitsAfter[3].Name });
+			newSplitOrder.Add(new Split { Handle = SplitsAfter[2].Handle, Name = SplitsAfter[2].Name });
+
+			TestModel.ModifyChallenge(challengeName, newSplitOrder, null);
 
 			// ASSERT
 			ModelXml VerifyModel = new ModelXml();
@@ -1129,17 +1132,17 @@ namespace UnitTest_Homunculus_Model
 			List<Split> SplitsAfterAfter = VerifyModel.GetSplits(challengeName);
 
 			// Verify split names.
-			Assert.AreEqual(SplitsAfter.Count, SplitsAfterAfter.Count);
-			Assert.AreEqual(SplitsAfter[0].Name, SplitsAfterAfter[0].Name);
-			Assert.AreEqual(SplitsAfter[1].Name, SplitsAfterAfter[1].Name);
-			Assert.AreEqual(SplitsAfter[3].Name, SplitsAfterAfter[2].Name);
-			Assert.AreEqual(SplitsAfter[2].Name, SplitsAfterAfter[3].Name);
+			Assert.AreEqual(newSplitOrder.Count, SplitsAfterAfter.Count);
+			Assert.AreEqual(newSplitOrder[0].Name, SplitsAfterAfter[0].Name);
+			Assert.AreEqual(newSplitOrder[1].Name, SplitsAfterAfter[1].Name);
+			Assert.AreEqual(newSplitOrder[2].Name, SplitsAfterAfter[2].Name);
+			Assert.AreEqual(newSplitOrder[3].Name, SplitsAfterAfter[3].Name);
 
 			// Verify that Handle didn't change.
-			Assert.AreEqual(SplitsAfter[0].Handle, SplitsAfterAfter[0].Handle);
-			Assert.AreEqual(SplitsAfter[1].Handle, SplitsAfterAfter[1].Handle);
-			Assert.AreEqual(SplitsAfter[3].Handle, SplitsAfterAfter[2].Handle);
-			Assert.AreEqual(SplitsAfter[2].Handle, SplitsAfterAfter[3].Handle);
+			Assert.AreEqual(newSplitOrder[0].Handle, SplitsAfterAfter[0].Handle);
+			Assert.AreEqual(newSplitOrder[1].Handle, SplitsAfterAfter[1].Handle);
+			Assert.AreEqual(newSplitOrder[2].Handle, SplitsAfterAfter[2].Handle);
+			Assert.AreEqual(newSplitOrder[3].Handle, SplitsAfterAfter[3].Handle);
 		}
 
 		[TestMethod]
