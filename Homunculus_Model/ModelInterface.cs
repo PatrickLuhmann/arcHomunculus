@@ -12,6 +12,7 @@ namespace Homunculus_Model
 		void LoadDatabase(string Filename);
 		void CreateDatabase(string Filename);
 		List<Split> CreateChallenge(string ChallengeName, List<string> Splits);
+		void ModifyChallenge(string ChallengeName, List<Split> Splits, string NewChallengeName);
 		List<string> GetChallenges();
 		List<Split> GetSplits(string ChallengeName);
 		void StartNewRun(string ChallengeName);

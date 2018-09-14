@@ -87,6 +87,7 @@ namespace Homunculus_ViewModel
 						int splitPB = (runPB == null ? 9999 : runPB.SplitCounts[idx]);
 						splitList.Add(new SplitVM
 						{
+							Handle = mSplits[idx].Handle,
 							SplitName = mSplits[idx].Name,
 							CurrentValue = (mostRecent == null) ? 0 : mostRecent.SplitCounts[idx],
 							DiffValue = splitPB, // TODO: I think this is going away.
@@ -223,9 +224,29 @@ namespace Homunculus_ViewModel
 			NotifyPropertyChanged("ChallengeList");
 		}
 
-		public void EditChallenge(string Name, ObservableCollection<SplitVM> SplitList)
+		public void RearrangeChallenge(string Name, ObservableCollection<SplitVM> Splits)
 		{
+			if (Name == null || Splits == null)
+				throw new ArgumentNullException();
 
+			// Check for unique new Name before we start processing the splits.
+			if (Name != currentChallenge && challengeList.Contains(Name))
+				throw new ArgumentException();
+
+			// Convert the split list into what the Model wants.
+			List<Split> newSplits = new List<Split>();
+			foreach( var s in Splits)
+			{
+				newSplits.Add(new Split { Handle = s.Handle, Name = s.SplitName });
+			}
+
+			Challenges.ModifyChallenge(CurrentChallenge, newSplits, Name);
+
+			// TODO: Update challenge list because the name might have changed.
+
+			// Update split list because the names and/or order might have changed.
+			CurrentChallenge = ""; //  hack because CurrentChallenge name isn't different
+			CurrentChallenge = Name;
 		}
 
 		/// <summary>
@@ -407,6 +428,8 @@ namespace Homunculus_ViewModel
 
 	public class SplitVM : INotifyPropertyChanged, IEquatable<SplitVM>
 	{
+		public UInt32 Handle { get; set; }
+
 		public string SplitName { get; set; }
 
 		private int currentValue;
@@ -435,6 +458,7 @@ namespace Homunculus_ViewModel
 		}
 
 		private int currentPbValue;
+
 		public int CurrentPbValue
 		{
 			get

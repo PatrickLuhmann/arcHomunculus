@@ -18,7 +18,7 @@ using Homunculus_ViewModel;
 
 namespace Homunculus_WPF
 {
-	public enum EditMode { Edit = 0, Clone };
+	public enum EditMode { Rearrange = 0, Clone };
 
 	public class HackViewModel : INotifyPropertyChanged
 	{
@@ -46,11 +46,13 @@ namespace Homunculus_WPF
 	{
 		EditMode Mode;
 		HackViewModel myHVM;
+		SplitsViewModel Svm;
 
 		public CreateChallengeWindow(SplitsViewModel svm, EditMode mode)
 		{
 			InitializeComponent();
 
+			Svm = svm;
 			myHVM = (HackViewModel)DataContext;
 			myHVM.HackSplitList = new ObservableCollection<SplitVM>();
 			foreach (var s in svm.SplitList)
@@ -60,9 +62,9 @@ namespace Homunculus_WPF
 
 			// Set window behavior based on mode.
 			Mode = mode;
-			if (Mode == EditMode.Edit)
+			if (Mode == EditMode.Rearrange)
 			{
-				this.Title = "Edit Challenge";
+				this.Title = "Rearrange Challenge";
 				challengeName.Text = svm.CurrentChallenge;
 
 				// Only allow Up, Down, and Rename.
@@ -118,10 +120,19 @@ namespace Homunculus_WPF
 			else
 			{
 				// TODO: Implement Edit.
-			}
+				try
+				{
+					Svm.RearrangeChallenge(challengeName.Text, myHVM.HackSplitList);
 
-			// NOTE: This causes the window to close automatically.
-			DialogResult = true;
+					// NOTE: This causes the window to close automatically.
+					DialogResult = true;
+				}
+				catch (ArgumentException exc)
+				{
+					// Inform the user that they need to change the challenge name.
+					MessageBox.Show("ERROR: The name of the challenge must be unique.", "Bad Challenge Name", MessageBoxButton.OK, MessageBoxImage.Error);
+				}
+			}
 		}
 
 		private void deleteButton_Click(object sender, RoutedEventArgs e)
@@ -164,6 +175,10 @@ namespace Homunculus_WPF
 				// Need to save the index because changing the list resets it to -1.
 				int index = splitsListBox.SelectedIndex;
 				//((SplitsViewModel)DataContext).MoveDownSplitProc(splitsListBox.SelectedIndex);
+				SplitVM item = myHVM.HackSplitList[index];
+				myHVM.HackSplitList.RemoveAt(index);
+				myHVM.HackSplitList.Insert(index + 1, item);
+
 				splitsListBox.SelectedIndex = index + 1;
 			}
 		}
