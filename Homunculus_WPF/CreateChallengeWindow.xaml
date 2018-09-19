@@ -27,7 +27,6 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <TextBox Margin="5" Text="{Binding Handle}"/>
                             <TextBox Margin="5" Text="{Binding SplitName}"/>
                         </StackPanel>
                     </DataTemplate>
