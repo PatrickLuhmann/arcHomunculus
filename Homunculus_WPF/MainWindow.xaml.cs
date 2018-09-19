@@ -1,6 +1,7 @@
 ﻿using Homunculus_ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -55,6 +56,10 @@ namespace Homunculus_WPF
 			splitsListView.SelectedIndex++;
 			if (splitsListView.SelectedIndex == splitsListView.Items.Count)
 				splitsListView.SelectedIndex = -1;
+
+			// If the run is now over, change the status text.
+			if (!((SplitsViewModel)DataContext).RunInProgress)
+				statusText.Text = "Run not active";
 		}
 
 		private void createChallengeButton_Click(object sender, RoutedEventArgs e)
@@ -167,6 +172,19 @@ namespace Homunculus_WPF
 				// not what the user wants, but we need to start somewhere.
 				splitsListView.SelectedIndex = 0;
 			}
+		}
+	}
+
+	public class BoolToInverseConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return !(bool)value;
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

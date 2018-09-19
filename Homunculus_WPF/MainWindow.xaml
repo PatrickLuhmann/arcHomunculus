@@ -25,6 +25,8 @@
                 <TextBlock>)</TextBlock>
             </StackPanel>
         </DataTemplate>
+
+        <local:BoolToInverseConverter x:Key="InvertBoolConverter"/>
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -59,10 +61,10 @@
                 </ListView.View>
             </ListView>
             <StackPanel Orientation="Horizontal">
-                <Button Name="successButton" Click="successButton_Click" Margin="5,5,5,5" Content="{Binding SuccessButtonText}"/>
-                <Button Name="failureButton" Click="failureButton_Click" Margin="5,5,5,5" Content="{Binding FailureButtonText}"/>
-                <Button Name="startRunButton" Click="startRunButton_Click" Margin="5" Content="Start New Run"/>
-                <Button Name="endRunButton" Click="endRunButton_Click" Margin="5" Content="End Run"/>
+                <Button Name="successButton" Click="successButton_Click" Margin="5,5,5,5" Content="{Binding SuccessButtonText}" IsEnabled="{Binding RunInProgress}"/>
+                <Button Name="failureButton" Click="failureButton_Click" Margin="5,5,5,5" Content="{Binding FailureButtonText}" IsEnabled="{Binding RunInProgress}"/>
+                <Button Name="startRunButton" Click="startRunButton_Click" Margin="5" Content="Start New Run" IsEnabled="{Binding RunInProgress, Converter={StaticResource InvertBoolConverter}}"/>
+                <Button Name="endRunButton" Click="endRunButton_Click" Margin="5" Content="End Run" IsEnabled="{Binding RunInProgress}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock>Status:</TextBlock>

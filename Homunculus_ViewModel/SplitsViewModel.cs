@@ -97,12 +97,12 @@ namespace Homunculus_ViewModel
 
 					if (mostRecent == null || mostRecent.Closed)
 					{
-						runInProgress = false;
+						RunInProgress = false;
 						currentSplit = -1;
 					}
 					else
 					{
-						runInProgress = true;
+						RunInProgress = true;
 						currentSplit = mostRecent.CurrentSplit;
 					}
 				}
@@ -114,7 +114,6 @@ namespace Homunculus_ViewModel
 				// We changed some of our public properties.
 				NotifyPropertyChanged("CurrentChallenge");
 				NotifyPropertyChanged("SplitList");
-				NotifyPropertyChanged("RunInProgress");
 			}
 		}
 
@@ -122,7 +121,15 @@ namespace Homunculus_ViewModel
 		public ObservableCollection<SplitVM> SplitList { get { return splitList; } }
 
 		private bool runInProgress = false;
-		public bool RunInProgress { get { return runInProgress; } }
+		public bool RunInProgress
+		{
+			get { return runInProgress; }
+			set
+			{
+				runInProgress = value;
+				NotifyPropertyChanged("RunInProgress");
+			}
+		}
 
 		private int currentSplit = 0;
 		public int CurrentSplit { get { return currentSplit; } }
@@ -144,7 +151,7 @@ namespace Homunculus_ViewModel
 		public void SuccessProc()
 		{
 			// A run must be in progress.
-			if (runInProgress == false)
+			if (RunInProgress == false)
 				throw new InvalidOperationException();
 
 			// Inform the Model.
@@ -157,7 +164,7 @@ namespace Homunculus_ViewModel
 			if (CurrentSplit == SplitList.Count)
 			{
 				// TODO: Handle "game won" condition here.
-				runInProgress = false;
+				RunInProgress = false;
 				currentSplit = 0;
 
 				// TODO:If the current run is a PB, then update the PB
@@ -195,7 +202,7 @@ namespace Homunculus_ViewModel
 		public void FailureProc()
 		{
 			// A run must be in progress.
-			if (runInProgress == false)
+			if (RunInProgress == false)
 				throw new InvalidOperationException();
 
 			// Inform the Model.
@@ -297,7 +304,7 @@ namespace Homunculus_ViewModel
 			if (RunInProgress)
 			{
 				Challenges.EndRun(currentChallenge);
-				runInProgress = false;
+				RunInProgress = false;
 			}
 
 			Challenges.StartNewRun(currentChallenge);
@@ -312,7 +319,7 @@ namespace Homunculus_ViewModel
 			// Reset current split number.
 			currentSplit = 0;
 
-			runInProgress = true;
+			RunInProgress = true;
 
 			// We changed some of our public properties.
 			NotifyPropertyChanged("SplitList");
@@ -325,7 +332,7 @@ namespace Homunculus_ViewModel
 
 			Challenges.EndRun(currentChallenge);
 
-			runInProgress = false;
+			RunInProgress = false;
 		}
 
 		/// <summary>
