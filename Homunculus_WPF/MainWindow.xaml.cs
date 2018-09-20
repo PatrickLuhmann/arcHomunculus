@@ -54,12 +54,13 @@ namespace Homunculus_WPF
 			// Advance the selected row in the ListView.
 			// TODO: This should be fancier, such as with a star at the end.
 			splitsListView.SelectedIndex++;
-			if (splitsListView.SelectedIndex == splitsListView.Items.Count)
-				splitsListView.SelectedIndex = -1;
 
 			// If the run is now over, change the status text.
 			if (!((SplitsViewModel)DataContext).RunInProgress)
+			{
+				splitsListView.SelectedIndex = -1;
 				statusText.Text = "Run not active";
+			}
 		}
 
 		private void createChallengeButton_Click(object sender, RoutedEventArgs e)
