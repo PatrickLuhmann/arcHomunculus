@@ -153,9 +153,13 @@ namespace Homunculus_WPF
 
 		private void deleteButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (splitsListBox.SelectedIndex != -1)
+			int idx = splitsListBox.SelectedIndex;
+			if (idx != -1)
 			{
-				//((SplitsViewModel)DataContext).DeleteSplitProc(splitsListBox.SelectedIndex);
+				myHVM.HackSplitList.RemoveAt(idx);
+				if (idx == myHVM.HackSplitList.Count)
+					idx--;
+				splitsListBox.SelectedIndex = idx;
 			}
 		}
 
