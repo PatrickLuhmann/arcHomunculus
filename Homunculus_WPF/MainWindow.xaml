@@ -27,6 +27,7 @@
         </DataTemplate>
 
         <local:BoolToInverseConverter x:Key="InvertBoolConverter"/>
+        <local:PBTextColorConverter x:Key="PbTextColor"/>
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -59,6 +60,11 @@
                                         CellTemplate="{StaticResource PbValueTemplate}"/>
                     </GridView>
                 </ListView.View>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Foreground" Value="{Binding Path=., Converter={StaticResource PbTextColor}}"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
             </ListView>
             <StackPanel Orientation="Horizontal">
                 <Button Name="successButton" Click="successButton_Click" Margin="5,5,5,5" Content="{Binding SuccessButtonText}" IsEnabled="{Binding RunInProgress}"/>

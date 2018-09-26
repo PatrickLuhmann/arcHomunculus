@@ -188,4 +188,27 @@ namespace Homunculus_WPF
 			throw new NotImplementedException();
 		}
 	}
+
+	public class PBTextColorConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			// Getting at the properties of 'value' takes a couple of steps.
+			int CurrentValue = (int)value.GetType().GetProperty("CurrentValue").GetValue(value, null);
+			int CurrentPbValue = (int)value.GetType().GetProperty("CurrentPbValue").GetValue(value, null);
+
+			// Special Case: No PB set so color doesn't make sense.
+			if (CurrentPbValue == 9999)
+				return "Black";
+			if (CurrentValue <= CurrentPbValue)
+				return "Green";
+			else
+				return "Red";
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			return -1;
+		}
+	}
 }
