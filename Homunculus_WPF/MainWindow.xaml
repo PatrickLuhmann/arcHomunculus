@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:Homunculus_WPF"
         xmlns:vm="clr-namespace:Homunculus_ViewModel;assembly=Homunculus_ViewModel"
         mc:Ignorable="d"
+        x:Name="TheMainWindow"
         Title="MainWindow" Height="450" Width="800">
     <Window.DataContext>
         <vm:SplitsViewModel />
@@ -62,7 +63,14 @@
                 </ListView.View>
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
-                        <Setter Property="Foreground" Value="{Binding Path=., Converter={StaticResource PbTextColor}}"/>
+                        <Setter Property="Foreground">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource PbTextColor}">
+                                    <Binding Path="."/>
+                                    <Binding Path="DataContext.SplitList" ElementName="TheMainWindow"/>
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
                     </Style>
                 </ListView.ItemContainerStyle>
             </ListView>

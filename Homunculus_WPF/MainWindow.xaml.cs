@@ -189,26 +189,26 @@ namespace Homunculus_WPF
 		}
 	}
 
-	public class PBTextColorConverter : IValueConverter
+	public class PBTextColorConverter : IMultiValueConverter
 	{
-		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
 			// Getting at the properties of 'value' takes a couple of steps.
-			int CurrentValue = (int)value.GetType().GetProperty("CurrentValue").GetValue(value, null);
-			int CurrentPbValue = (int)value.GetType().GetProperty("CurrentPbValue").GetValue(value, null);
+			int CurrentValue = (int)values[0].GetType().GetProperty("CurrentValue").GetValue(values[0], null);
+			int CurrentPbValue = (int)values[0].GetType().GetProperty("CurrentPbValue").GetValue(values[0], null);
 
 			// Special Case: No PB set so color doesn't make sense.
 			if (CurrentPbValue == 9999)
-				return "Black";
+				return Brushes.Black;
 			if (CurrentValue <= CurrentPbValue)
-				return "Green";
+				return Brushes.Green;
 			else
-				return "Red";
+				return Brushes.Red;
 		}
 
-		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		public object[] ConvertBack(object value, Type[] targetType, object parameter, System.Globalization.CultureInfo culture)
 		{
-			return -1;
+			throw new NotImplementedException();
 		}
 	}
 }

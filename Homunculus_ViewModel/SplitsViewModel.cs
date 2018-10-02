@@ -214,6 +214,8 @@ namespace Homunculus_ViewModel
 			// Recalculate the difference.
 			splitList[CurrentSplit].DiffValue =
 				splitList[CurrentSplit].CurrentPbValue - splitList[CurrentSplit].CurrentValue;
+
+			NotifyPropertyChanged("SplitList");
 		}
 
 		public void CreateChallenge(string Name, List<string> Splits)
