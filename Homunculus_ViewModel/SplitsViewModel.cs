@@ -190,6 +190,8 @@ namespace Homunculus_ViewModel
 						split.CurrentPbValue = split.CurrentValue;
 					}
 				}
+
+				NotifyPropertyChanged("SplitList");
 			}
 		}
 
