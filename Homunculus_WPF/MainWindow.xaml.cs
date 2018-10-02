@@ -211,4 +211,21 @@ namespace Homunculus_WPF
 			throw new NotImplementedException();
 		}
 	}
+
+	public class SplitDiffCalculator : IMultiValueConverter
+	{
+		public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			// Getting at the properties of 'value' takes a couple of steps.
+			int CurrentValue = (int)values[0].GetType().GetProperty("CurrentValue").GetValue(values[0], null);
+			int CurrentPbValue = (int)values[0].GetType().GetProperty("CurrentPbValue").GetValue(values[0], null);
+
+			return (CurrentPbValue - CurrentValue).ToString();
+		}
+
+		public object[] ConvertBack(object value, Type[] targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			throw new NotImplementedException();
+		}
+	}
 }

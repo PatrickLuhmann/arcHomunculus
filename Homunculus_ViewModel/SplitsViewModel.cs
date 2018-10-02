@@ -90,7 +90,6 @@ namespace Homunculus_ViewModel
 							Handle = mSplits[idx].Handle,
 							SplitName = mSplits[idx].Name,
 							CurrentValue = (mostRecent == null) ? 0 : mostRecent.SplitCounts[idx],
-							DiffValue = splitPB, // TODO: I think this is going away.
 							CurrentPbValue = splitPB
 						});
 					}
@@ -213,10 +212,6 @@ namespace Homunculus_ViewModel
 			// Increment the current value of the current split.
 			splitList[CurrentSplit].CurrentValue++;
 
-			// Recalculate the difference.
-			splitList[CurrentSplit].DiffValue =
-				splitList[CurrentSplit].CurrentPbValue - splitList[CurrentSplit].CurrentValue;
-
 			NotifyPropertyChanged("SplitList");
 		}
 
@@ -317,7 +312,6 @@ namespace Homunculus_ViewModel
 			foreach (var split in SplitList)
 			{
 				split.CurrentValue = 0;
-				split.DiffValue = split.CurrentPbValue;
 			}
 
 			// Reset current split number.
@@ -463,19 +457,7 @@ namespace Homunculus_ViewModel
 			}
 		}
 
-		private int diffValue;
-		public int DiffValue
-		{
-			get { return diffValue; }
-			set
-			{
-				diffValue = value;
-				NotifyPropertyChanged();
-			}
-		}
-
 		private int currentPbValue;
-
 		public int CurrentPbValue
 		{
 			get
@@ -496,7 +478,6 @@ namespace Homunculus_ViewModel
 
 			return SplitName == other.SplitName &&
 				currentValue == other.currentValue &&
-				diffValue == other.diffValue &&
 				currentPbValue == other.currentPbValue;
 		}
 

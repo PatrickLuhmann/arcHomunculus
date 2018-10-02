@@ -191,23 +191,18 @@ namespace UnitTest_ViewModel
 			Assert.AreEqual(5, TestViewModel.SplitList.Count);
 			Assert.AreEqual("split 1", TestViewModel.SplitList[0].SplitName);
 			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentValue);
-			Assert.AreEqual(9999, TestViewModel.SplitList[0].DiffValue);
 			Assert.AreEqual(9999, TestViewModel.SplitList[0].CurrentPbValue);
 			Assert.AreEqual("split 2", TestViewModel.SplitList[1].SplitName);
 			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentValue);
-			Assert.AreEqual(9999, TestViewModel.SplitList[1].DiffValue);
 			Assert.AreEqual(9999, TestViewModel.SplitList[1].CurrentPbValue);
 			Assert.AreEqual("split 3", TestViewModel.SplitList[2].SplitName);
 			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentValue);
-			Assert.AreEqual(9999, TestViewModel.SplitList[2].DiffValue);
 			Assert.AreEqual(9999, TestViewModel.SplitList[2].CurrentPbValue);
 			Assert.AreEqual("split 4", TestViewModel.SplitList[3].SplitName);
 			Assert.AreEqual(0, TestViewModel.SplitList[3].CurrentValue);
-			Assert.AreEqual(9999, TestViewModel.SplitList[3].DiffValue);
 			Assert.AreEqual(9999, TestViewModel.SplitList[3].CurrentPbValue);
 			Assert.AreEqual("split 5", TestViewModel.SplitList[4].SplitName);
 			Assert.AreEqual(0, TestViewModel.SplitList[4].CurrentValue);
-			Assert.AreEqual(9999, TestViewModel.SplitList[4].DiffValue);
 			Assert.AreEqual(9999, TestViewModel.SplitList[4].CurrentPbValue);
 
 			// Has CurrentSplit been set correctly?
@@ -275,8 +270,7 @@ namespace UnitTest_ViewModel
 			{
 				SplitName = "split 1",
 				CurrentValue = 0,
-				CurrentPbValue = 9999,
-				DiffValue = 9999
+				CurrentPbValue = 9999
 			};
 			Assert.AreEqual<SplitVM>(testSplit, mySvm.SplitList[0]);
 			testSplit.SplitName = "split 2";
@@ -484,19 +478,14 @@ namespace UnitTest_ViewModel
 			Assert.AreEqual(false, TestViewModel.RunInProgress);
 			Assert.AreEqual(5, TestViewModel.SplitList.Count);
 			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentValue);
-			Assert.AreEqual(9999, TestViewModel.SplitList[0].DiffValue);
 			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentPbValue);
 			Assert.AreEqual(2, TestViewModel.SplitList[1].CurrentValue);
-			Assert.AreEqual(9997, TestViewModel.SplitList[1].DiffValue);
 			Assert.AreEqual(2, TestViewModel.SplitList[1].CurrentPbValue);
 			Assert.AreEqual(7, TestViewModel.SplitList[2].CurrentValue);
-			Assert.AreEqual(9992, TestViewModel.SplitList[2].DiffValue);
 			Assert.AreEqual(7, TestViewModel.SplitList[2].CurrentPbValue);
 			Assert.AreEqual(1, TestViewModel.SplitList[3].CurrentValue);
-			Assert.AreEqual(9998, TestViewModel.SplitList[3].DiffValue);
 			Assert.AreEqual(1, TestViewModel.SplitList[3].CurrentPbValue);
 			Assert.AreEqual(0, TestViewModel.SplitList[4].CurrentValue);
-			Assert.AreEqual(9999, TestViewModel.SplitList[4].DiffValue);
 			Assert.AreEqual(0, TestViewModel.SplitList[4].CurrentPbValue);
 			mockModel.Verify(mm => mm.Failure(challengeName), Times.Exactly(10));
 			mockModel.Verify(mm => mm.Success(challengeName), Times.Exactly(5));
@@ -527,19 +516,14 @@ namespace UnitTest_ViewModel
 			Assert.AreEqual(false, TestViewModel.RunInProgress);
 			Assert.AreEqual(5, TestViewModel.SplitList.Count);
 			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentValue);
-			Assert.AreEqual(0, TestViewModel.SplitList[0].DiffValue);
 			Assert.AreEqual(0, TestViewModel.SplitList[0].CurrentPbValue);
 			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentValue);
-			Assert.AreEqual(2, TestViewModel.SplitList[1].DiffValue);
 			Assert.AreEqual(0, TestViewModel.SplitList[1].CurrentPbValue);
 			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentValue);
-			Assert.AreEqual(7, TestViewModel.SplitList[2].DiffValue);
 			Assert.AreEqual(0, TestViewModel.SplitList[2].CurrentPbValue);
 			Assert.AreEqual(0, TestViewModel.SplitList[3].CurrentValue);
-			Assert.AreEqual(1, TestViewModel.SplitList[3].DiffValue);
 			Assert.AreEqual(0, TestViewModel.SplitList[3].CurrentPbValue);
 			Assert.AreEqual(1, TestViewModel.SplitList[4].CurrentValue);
-			Assert.AreEqual(-1, TestViewModel.SplitList[4].DiffValue);
 			Assert.AreEqual(1, TestViewModel.SplitList[4].CurrentPbValue);
 			mockModel.Verify(mm => mm.Failure(challengeName), Times.Exactly(10 + 1));
 			mockModel.Verify(mm => mm.Success(challengeName), Times.Exactly(5 + 5));
@@ -709,7 +693,6 @@ namespace UnitTest_ViewModel
 					Handle = s.Handle,
 					SplitName = s.SplitName,
 					CurrentValue = s.CurrentValue,
-					DiffValue = s.DiffValue,
 					CurrentPbValue = s.CurrentPbValue
 				});
 
@@ -720,7 +703,6 @@ namespace UnitTest_ViewModel
 					// Change the name.
 					SplitName = s.SplitName + "this is a test",
 					CurrentValue = s.CurrentValue,
-					DiffValue = s.DiffValue,
 					CurrentPbValue = s.CurrentPbValue
 				});
 			}
@@ -759,7 +741,6 @@ namespace UnitTest_ViewModel
 				// The rest is the same.
 				Assert.AreEqual(origSplits[i].Handle, actSplits[i].Handle);
 				Assert.AreEqual(origSplits[i].CurrentValue, actSplits[i].CurrentValue);
-				Assert.AreEqual(origSplits[i].DiffValue, actSplits[i].DiffValue);
 				Assert.AreEqual(origSplits[i].CurrentPbValue, actSplits[i].CurrentPbValue);
 			}
 
@@ -785,7 +766,6 @@ namespace UnitTest_ViewModel
 					Handle = s.Handle,
 					SplitName = s.SplitName,
 					CurrentValue = s.CurrentValue,
-					DiffValue = s.DiffValue,
 					CurrentPbValue = s.CurrentPbValue
 				});
 
@@ -795,7 +775,6 @@ namespace UnitTest_ViewModel
 					Handle = s.Handle,
 					SplitName = s.SplitName,
 					CurrentValue = s.CurrentValue,
-					DiffValue = s.DiffValue,
 					CurrentPbValue = s.CurrentPbValue
 				});
 			}
@@ -849,7 +828,6 @@ namespace UnitTest_ViewModel
 				// The rest is the same.
 				Assert.AreEqual(origSplits[4-i].Handle, actSplits[i].Handle);
 				Assert.AreEqual(origSplits[4-i].CurrentValue, actSplits[i].CurrentValue);
-				Assert.AreEqual(origSplits[4-i].DiffValue, actSplits[i].DiffValue);
 				Assert.AreEqual(origSplits[4-i].CurrentPbValue, actSplits[i].CurrentPbValue);
 			}
 
@@ -876,7 +854,6 @@ namespace UnitTest_ViewModel
 					Handle = s.Handle,
 					SplitName = s.SplitName,
 					CurrentValue = s.CurrentValue,
-					DiffValue = s.DiffValue,
 					CurrentPbValue = s.CurrentPbValue
 				});
 
@@ -886,7 +863,6 @@ namespace UnitTest_ViewModel
 					Handle = s.Handle,
 					SplitName = s.SplitName,
 					CurrentValue = s.CurrentValue,
-					DiffValue = s.DiffValue,
 					CurrentPbValue = s.CurrentPbValue
 				});
 			}
@@ -935,7 +911,6 @@ namespace UnitTest_ViewModel
 				// The rest is the same.
 				Assert.AreEqual(origSplits[i].Handle, actSplits[i].Handle);
 				Assert.AreEqual(origSplits[i].CurrentValue, actSplits[i].CurrentValue);
-				Assert.AreEqual(origSplits[i].DiffValue, actSplits[i].DiffValue);
 				Assert.AreEqual(origSplits[i].CurrentPbValue, actSplits[i].CurrentPbValue);
 			}
 

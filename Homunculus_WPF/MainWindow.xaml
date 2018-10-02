@@ -29,6 +29,7 @@
 
         <local:BoolToInverseConverter x:Key="InvertBoolConverter"/>
         <local:PBTextColorConverter x:Key="PbTextColor"/>
+        <local:SplitDiffCalculator x:Key="SplitDiffCalc"/>
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -52,7 +53,14 @@
                         <GridViewColumn Header="Diff" Width="50">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding DiffValue}" TextAlignment="Center" />
+                                    <TextBlock TextAlignment="Center">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{StaticResource SplitDiffCalc}">
+                                                <Binding Path="."/>
+                                                <Binding Path="DataContext.SplitList" ElementName="TheMainWindow"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
