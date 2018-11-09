@@ -22,7 +22,7 @@
                        Text="{Binding CurrentPbValue}"/>
                 <TextBlock>(</TextBlock>
                 <TextBlock Margin="5,0,5,0" HorizontalAlignment="Center"
-                       Text="{Binding CurrentPbValue}"/>
+                       Text="{Binding CumulativePbValue}"/>
                 <TextBlock>)</TextBlock>
             </StackPanel>
         </DataTemplate>

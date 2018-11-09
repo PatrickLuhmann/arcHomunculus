@@ -82,15 +82,18 @@ namespace Homunculus_ViewModel
 					// so set CurrentValue to 0.
 					// CurrentPbValue comes from the runs.
 					splitList = new ObservableCollection<SplitVM>();
+					int accumPb = 0;
 					for (int idx = 0; idx < mSplits.Count; idx++)
 					{
 						int splitPB = (runPB == null ? 9999 : runPB.SplitCounts[idx]);
+						accumPb += splitPB;
 						splitList.Add(new SplitVM
 						{
 							Handle = mSplits[idx].Handle,
 							SplitName = mSplits[idx].Name,
 							CurrentValue = (mostRecent == null) ? 0 : mostRecent.SplitCounts[idx],
-							CurrentPbValue = splitPB
+							CurrentPbValue = splitPB,
+							CumulativePbValue = accumPb
 						});
 					}
 
@@ -184,9 +187,12 @@ namespace Homunculus_ViewModel
 					// Update the PB value in the splits so that they
 					// are ready for the next run. Note that the Model
 					// has already done everything it needs to do.
+					int accumPb = 0;
 					foreach (var split in splitList)
 					{
 						split.CurrentPbValue = split.CurrentValue;
+						accumPb += split.CurrentPbValue;
+						split.CumulativePbValue = accumPb;
 					}
 				}
 
@@ -467,6 +473,20 @@ namespace Homunculus_ViewModel
 			set
 			{
 				currentPbValue = value;
+				NotifyPropertyChanged();
+			}
+		}
+
+		private int cumulativePbValue;
+		public int CumulativePbValue
+		{
+			get
+			{
+				return cumulativePbValue;
+			}
+			set
+			{
+				cumulativePbValue = value;
 				NotifyPropertyChanged();
 			}
 		}
