@@ -82,11 +82,12 @@ namespace Homunculus_ViewModel
 					// so set CurrentValue to 0.
 					// CurrentPbValue comes from the runs.
 					splitList = new ObservableCollection<SplitVM>();
-					int accumPb = 0;
+					int accumCurrent = 0, accumPb = 0;
 					for (int idx = 0; idx < mSplits.Count; idx++)
 					{
 						int splitPB = (runPB == null ? 9999 : runPB.SplitCounts[idx]);
 						accumPb += splitPB;
+						accumCurrent += (mostRecent == null) ? 0 : mostRecent.SplitCounts[idx];
 						splitList.Add(new SplitVM
 						{
 							Handle = mSplits[idx].Handle,
@@ -101,11 +102,35 @@ namespace Homunculus_ViewModel
 					{
 						RunInProgress = false;
 						currentSplit = -1;
+
+						splitList.Add(new SplitVM
+						{
+							Handle = 0,
+							SplitName = "TOTAL",
+							CurrentValue = accumCurrent,
+							CurrentPbValue = accumPb,
+							CumulativePbValue = accumPb
+						});
 					}
 					else
 					{
 						RunInProgress = true;
 						currentSplit = mostRecent.CurrentSplit;
+
+						accumPb = 0;
+						for (int idx = 0; idx <= currentSplit; idx++)
+						{
+							accumPb += splitList[idx].CurrentPbValue;
+						}
+						accumPb = splitList[currentSplit].CumulativePbValue;
+						splitList.Add(new SplitVM
+						{
+							Handle = 0,
+							SplitName = "TOTAL",
+							CurrentValue = accumCurrent,
+							CurrentPbValue = accumPb,
+							CumulativePbValue = accumPb
+						});
 					}
 				}
 
@@ -163,7 +188,7 @@ namespace Homunculus_ViewModel
 			currentSplit++;
 
 			// If we are past the end, then we have won the game.
-			if (CurrentSplit == SplitList.Count)
+			if (CurrentSplit == SplitList.Count - 1)
 			{
 				// TODO: Handle "game won" condition here.
 				RunInProgress = false;
@@ -179,8 +204,12 @@ namespace Homunculus_ViewModel
 				int currTotal = 0;
 				foreach (var split in splitList)
 				{
-					currPB += split.CurrentPbValue;
-					currTotal += split.CurrentValue;
+					//TODO: Replace this hack.
+					if (split.Handle != 0)
+					{
+						currPB += split.CurrentPbValue;
+						currTotal += split.CurrentValue;
+					}
 				}
 				if (currTotal < currPB)
 				{
@@ -190,12 +219,25 @@ namespace Homunculus_ViewModel
 					int accumPb = 0;
 					foreach (var split in splitList)
 					{
-						split.CurrentPbValue = split.CurrentValue;
-						accumPb += split.CurrentPbValue;
-						split.CumulativePbValue = accumPb;
+						//TODO: Replace this hack.
+						if (split.Handle != 0)
+						{
+							split.CurrentPbValue = split.CurrentValue;
+							accumPb += split.CurrentPbValue;
+							split.CumulativePbValue = accumPb;
+						}
 					}
+					splitList.Last().CumulativePbValue = accumPb;
+					splitList.Last().CurrentPbValue = accumPb;
 				}
 
+				NotifyPropertyChanged("SplitList");
+			}
+			else
+			{
+				// Update TOTAL row.
+				splitList.Last().CumulativePbValue = splitList[currentSplit].CumulativePbValue;
+				splitList.Last().CurrentPbValue = splitList[currentSplit].CumulativePbValue;
 				NotifyPropertyChanged("SplitList");
 			}
 		}
@@ -217,6 +259,9 @@ namespace Homunculus_ViewModel
 
 			// Increment the current value of the current split.
 			splitList[CurrentSplit].CurrentValue++;
+
+			// Increment the current value of the TOTAL row.
+			splitList.Last().CurrentValue++;
 
 			NotifyPropertyChanged("SplitList");
 		}
@@ -319,6 +364,8 @@ namespace Homunculus_ViewModel
 			{
 				split.CurrentValue = 0;
 			}
+			splitList.Last().CumulativePbValue = SplitList[0].CumulativePbValue;
+			splitList.Last().CurrentPbValue = SplitList[0].CumulativePbValue;
 
 			// Reset current split number.
 			currentSplit = 0;

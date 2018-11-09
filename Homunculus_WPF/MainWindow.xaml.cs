@@ -53,7 +53,8 @@ namespace Homunculus_WPF
 
 			// Advance the selected row in the ListView.
 			// TODO: This should be fancier, such as with a star at the end.
-			splitsListView.SelectedIndex++;
+			// TODO: This isn't needed when all paths of SuccessProc notify-change SplitList???
+			//splitsListView.SelectedIndex++;
 
 			// If the run is now over, change the status text.
 			if (!((SplitsViewModel)DataContext).RunInProgress)
