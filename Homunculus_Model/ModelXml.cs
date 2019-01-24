@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
 using System.Text;
@@ -53,7 +54,7 @@ namespace Homunculus_Model
 			{
 				throw new System.IO.FileFormatException();
 			}
-			if (appName != "Homunculus" || version != 1)
+			if (appName != "Homunculus" || version != 2)
 			{
 				throw new System.IO.FileFormatException();
 			}
@@ -82,6 +83,11 @@ namespace Homunculus_Model
 			challenges.Columns["ID"].AutoIncrementSeed = 1;
 			challenges.Columns["ID"].AutoIncrementStep = 1;
 			challenges.Columns.Add("Name", typeof(string));
+			challenges.Columns.Add("CurrentSplitIndex", typeof(int));
+			challenges.Columns["CurrentSplitIndex"].DefaultValue = -1;
+			challenges.Columns.Add("PBIndex", typeof(int));
+			challenges.Columns["PBIndex"].DefaultValue = -1;
+			challenges.Columns.Add("PBRunID", typeof(UInt32));
 
 			// TABLE: Splits
 			DataTable splits = ChallengeRuns.Tables.Add("Splits");
@@ -102,8 +108,6 @@ namespace Homunculus_Model
 			runs.Columns["ID"].AutoIncrementSeed = 1;
 			runs.Columns["ID"].AutoIncrementStep = 1;
 			runs.Columns.Add("ChallengeID", typeof(UInt32));
-			runs.Columns.Add("CurrentSplit", typeof(int));
-			runs.Columns["CurrentSplit"].DefaultValue = 0;
 			runs.Columns.Add("Closed", typeof(bool));
 			runs.Columns["Closed"].DefaultValue = false;
 			runs.Columns.Add("PB", typeof(bool));
@@ -134,7 +138,7 @@ namespace Homunculus_Model
 
 			row = configParameters.NewRow();
 			row["Name"] = "SchemaVersion";
-			row["Value"] = "1";
+			row["Value"] = "2";
 			configParameters.Rows.Add(row);
 
 			// Save the schema to the database file.
@@ -147,8 +151,8 @@ namespace Homunculus_Model
 		/// </summary>
 		/// <param name="ChallengeName">The name of the challenge (must be unique).</param>
 		/// <param name="Splits">Ordered list of the name of the splits for the challenge.</param>
-		/// <returns>Ordered list of the splits, with Handle filled in for future use.</returns>
-		public List<Split> CreateChallenge(string ChallengeName, List<string> Splits)
+		/// <returns>The newly-created Challenge object.</returns>
+		public Challenge CreateChallenge(string ChallengeName, List<string> Splits)
 		{
 			// Check for bad parameters.
 			if (ChallengeName == null || Splits == null)
@@ -170,8 +174,12 @@ namespace Homunculus_Model
 			UInt32 challengeID = Convert.ToUInt32(row["ID"].ToString());
 			Challenges.Rows.Add(row);
 
+			// Create the Challenge object to be returned.
+			Challenge NewChallenge = new Challenge();
+			NewChallenge.ChallengeId = challengeID;
+			NewChallenge.Name = ChallengeName;
+
 			// Create the split entries in the Splits table.
-			List<Split> outSplits = new List<Split>();
 			DataTable dt = ChallengeRuns.Tables["Splits"];
 			DataRow dr;
 			for (int i = 0; i < Splits.Count; i++)
@@ -182,12 +190,12 @@ namespace Homunculus_Model
 				dr["IndexWithinChallenge"] = i;
 				dt.Rows.Add(dr);
 				// Add to the list to return to the caller.
-				outSplits.Add(new Split { Name = Splits[i], Handle = Convert.ToUInt32(dr["ID"]) });
+				NewChallenge.Splits.Add(new Split { Name = Splits[i], SplitId = Convert.ToUInt32(dr["ID"]) });
 			}
 
 			Save();
 
-			return outSplits;
+			return NewChallenge;
 		}
 
 		/// <summary>
@@ -242,7 +250,7 @@ namespace Homunculus_Model
 
 					// See if this split is in the database.
 					DataRow[] drSplit = ChallengeRuns.Tables["Splits"]
-					.Select("ID = " + s.Handle.ToString());
+					.Select("ID = " + s.SplitId.ToString());
 					if (drSplit.Count() == 1)
 					{
 						// If so, sets its Name.
@@ -334,12 +342,67 @@ namespace Homunculus_Model
 		/// Get a list of the challenges in the database.
 		/// </summary>
 		/// <returns>List of the challenge names (no particular order).</returns>
-		public List<string> GetChallenges()
+		public List<Challenge> GetChallenges()
 		{
-			List<string> challenges = new List<string>();
-			foreach (DataRow row in ChallengeRuns.Tables["Challenges"].Rows)
+			List<Challenge> challenges = new List<Challenge>();
+
+			DataRow[] rowChallenges = ChallengeRuns.Tables["Challenges"].Select();
+			foreach (var dr in rowChallenges)
 			{
-				challenges.Add(row["Name"].ToString());
+				Challenge newChallenge = new Challenge();
+				newChallenge.ChallengeId = Convert.ToUInt32(dr["ID"]);
+				newChallenge.Name = dr["Name"].ToString();
+
+				// Get the splits that go with this challenge.
+				DataRow[] rowSplits = ChallengeRuns.Tables["Splits"]
+					.Select("ChallengeID = " + newChallenge.ChallengeId.ToString(),
+						  "IndexWithinChallenge ASC");
+
+				foreach (var row in rowSplits)
+				{
+					newChallenge.Splits.Add(new Split
+					{
+						SplitId = Convert.ToUInt32(row["ID"]),
+						Name = row["Name"].ToString(),
+					});
+				}
+
+				// Get the runs that go with this challenge.
+				DataRow[] rowRuns = ChallengeRuns.Tables["Runs"]
+					.Select("ChallengeID = " + newChallenge.ChallengeId.ToString(),
+						"ID ASC");
+
+				foreach (var row in rowRuns)
+				{
+					Run newRun = new Run();
+
+					newRun.RunId = Convert.ToUInt32(row["ID"]);
+
+					// Get the counts for this run based on the splits.
+					foreach (var split in newChallenge.Splits)
+					{
+						DataRow[] rowCount = ChallengeRuns.Tables["Counts"]
+							.Select("RunID = " + newRun.RunId + " AND SplitID = " + split.SplitId);
+
+						Count count = new Count();
+						count.CountId = Convert.ToUInt32(rowCount[0]["ID"]);
+						count.Value = (int)rowCount[0]["Value"];
+						count.Run = newRun;
+						count.Split = split;
+
+						newRun.Counts.Add(count);
+					}
+
+					newRun.Challenge = newChallenge;
+
+					newRun.StartDateTime = Convert.ToDateTime(row["StartDateTime"]);
+					newRun.EndDateTime = Convert.ToDateTime(row["EndDateTime"]);
+					newRun.Duration = TimeSpan.Parse(row["Duration"].ToString());
+
+					newChallenge.Runs.Add(newRun);
+				}
+
+				challenges.Add(newChallenge);
 			}
 			return challenges;
 		}
@@ -368,27 +431,33 @@ namespace Homunculus_Model
 				splits.Add(new Split
 				{
 					Name = r["Name"].ToString(),
-					Handle = Convert.ToUInt32(r["ID"])
+					SplitId = Convert.ToUInt32(r["ID"])
 				});
 			}
 
 			return splits;
 		}
 
-		public void StartNewRun(string ChallengeName)
+		public void StartNewRun(Challenge Challenge)
 		{
-			if (ChallengeName == null)
+			if (Challenge == null)
 				throw new ArgumentNullException();
-
-			// Get the Challenge ID.
+			if (Challenge.ChallengeId == 0)
+				throw new ArgumentException();
 			DataRow[] dr = ChallengeRuns.Tables["Challenges"]
-										.Select("Name = '" + ChallengeName + "'");
-
-			// Verify that the challenge was in the database.
+				.Select("ID = '" + Challenge.ChallengeId.ToString() + "'");
 			if (dr.Count() == 0)
 				throw new ArgumentException();
 
-			UInt32 challengeID = Convert.ToUInt32(dr[0]["ID"]);
+			// TODO: Just check Challenge.CurrentSplitIndex as well as
+			// Run.StartDateTime and Run.EndDateTime.
+			// TODO: What if the app changes these directly without using the
+			// service and doesn't follow the business rules? Is this a reason
+			// to have the business code be in the class itself? Presumably the
+			// set accessor could handle this, although I am concerned about having
+			// the same state being reflected in two different classes. For example,
+			// when a run finishes, Run.EndDateTime can be set, but should that accessor
+			// be allowed to set Challenge.CurrentSplitIndex?
 
 			// Make sure there isn't already an active run for this challenge.
 			DataRow[] runRows = ChallengeRuns.Tables["Runs"]
@@ -631,6 +700,7 @@ namespace Homunculus_Model
 
 		public List<Run> GetRuns(string ChallengeName)
 		{
+#if false
 			if (ChallengeName == null)
 				throw new ArgumentNullException();
 
@@ -685,6 +755,9 @@ namespace Homunculus_Model
 				});
 			}
 			return runs;
+#else
+			return null;
+#endif
 		}
 	}
 }

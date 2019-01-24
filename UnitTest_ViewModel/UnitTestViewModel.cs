@@ -37,7 +37,7 @@ namespace UnitTest_ViewModel
 			List<Split> modelSplits = new List<Split>();
 			foreach (var s in splits)
 			{
-				modelSplits.Add(new Split { Handle = 0, Name = s });
+				modelSplits.Add(new Split { SplitId = 0, Name = s });
 			}
 			mockModel.Setup(m => m.GetSplits(ChallengeName))
 				.Returns(modelSplits);
@@ -164,7 +164,7 @@ namespace UnitTest_ViewModel
 			List<Split> modelSplits = new List<Split>();
 			foreach (var s in splits)
 			{
-				modelSplits.Add(new Split { Handle = 0, Name = s });
+				modelSplits.Add(new Split { SplitId = 0, Name = s });
 			}
 			mockModel.Setup(m => m.GetSplits(challengeName))
 				.Returns(modelSplits);
@@ -237,8 +237,8 @@ namespace UnitTest_ViewModel
 			// something to validate.
 			List<Split> newSplits = new List<Split>
 			{
-				new Split { Handle = 0, Name = "split 1" },
-				new Split { Handle = 1, Name = "split 2" }
+				new Split { SplitId = 0, Name = "split 1" },
+				new Split { SplitId = 1, Name = "split 2" }
 			};
 			mockModel.Setup(m => m.GetSplits(newCurrentName))
 				.Returns(newSplits);
@@ -712,7 +712,7 @@ namespace UnitTest_ViewModel
 			List<Split> modelSplits = new List<Split>();
 			foreach (var s in testSplits)
 			{
-				modelSplits.Add(new Split { Handle = 0, Name = s.SplitName });
+				modelSplits.Add(new Split { SplitId = 0, Name = s.SplitName });
 			}
 			mockModel.Setup(mm => mm.GetSplits(testChal))
 				.Returns(modelSplits);
@@ -799,7 +799,7 @@ namespace UnitTest_ViewModel
 			List<Split> modelSplits = new List<Split>();
 			foreach (var s in testSplits)
 			{
-				modelSplits.Add(new Split { Handle = 0, Name = s.SplitName });
+				modelSplits.Add(new Split { SplitId = 0, Name = s.SplitName });
 			}
 			mockModel.Setup(mm => mm.GetSplits(testChal))
 				.Returns(modelSplits);
@@ -878,7 +878,7 @@ namespace UnitTest_ViewModel
 			List<Split> modelSplits = new List<Split>();
 			foreach (var s in testSplits)
 			{
-				modelSplits.Add(new Split { Handle = s.Handle, Name = s.SplitName });
+				modelSplits.Add(new Split { SplitId = s.Handle, Name = s.SplitName });
 			}
 			mockModel.Setup(mm => mm.GetSplits(newChallengeName))
 				.Returns(modelSplits);

@@ -8,7 +8,7 @@ namespace Homunculus_Model
 {
 	public class Split
 	{
-		public UInt32 Handle = 0;
+		public UInt32 SplitId = 0;
 		public string Name;
 	}
 }

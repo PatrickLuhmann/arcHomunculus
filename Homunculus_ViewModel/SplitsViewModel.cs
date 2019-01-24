@@ -90,7 +90,7 @@ namespace Homunculus_ViewModel
 						accumCurrent += (mostRecent == null) ? 0 : mostRecent.SplitCounts[idx];
 						splitList.Add(new SplitVM
 						{
-							Handle = mSplits[idx].Handle,
+							Handle = mSplits[idx].SplitId,
 							SplitName = mSplits[idx].Name,
 							CurrentValue = (mostRecent == null) ? 0 : mostRecent.SplitCounts[idx],
 							CurrentPbValue = splitPB,
@@ -294,7 +294,7 @@ namespace Homunculus_ViewModel
 			List<Split> newSplits = new List<Split>();
 			foreach( var s in Splits)
 			{
-				newSplits.Add(new Split { Handle = s.Handle, Name = s.SplitName });
+				newSplits.Add(new Split { SplitId = s.Handle, Name = s.SplitName });
 			}
 
 			Challenges.ModifyChallenge(CurrentChallenge, newSplits, Name);

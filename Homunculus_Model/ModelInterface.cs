@@ -8,17 +8,17 @@ namespace Homunculus_Model
 {
 	public interface IHomunculusModel
 	{
-		void DeleteChallenge(string ChallengeName);
-		void LoadDatabase(string Filename);
 		void CreateDatabase(string Filename);
-		List<Split> CreateChallenge(string ChallengeName, List<string> Splits);
+		void LoadDatabase(string Filename);
+		Challenge CreateChallenge(string ChallengeName, List<string> Splits);
 		void ModifyChallenge(string ChallengeName, List<Split> Splits, string NewChallengeName);
-		List<string> GetChallenges();
+		void DeleteChallenge(string ChallengeName);
+		List<Challenge> GetChallenges();
 		List<Split> GetSplits(string ChallengeName);
+		List<Run> GetRuns(string ChallengeName);
 		void StartNewRun(string ChallengeName);
 		void Success(string ChallengeName);
 		void Failure(string ChallengeName);
 		void EndRun(string ChallengeName);
-		List<Run> GetRuns(string ChallengeName);
 	}
 }
