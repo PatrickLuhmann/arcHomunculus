@@ -176,6 +176,7 @@ namespace Homunculus_Model
 
 			// Create the Challenge object to be returned.
 			Challenge NewChallenge = new Challenge();
+			NewChallenge.TheDataService = this;
 			NewChallenge.ChallengeId = challengeID;
 			NewChallenge.Name = ChallengeName;
 
@@ -438,6 +439,84 @@ namespace Homunculus_Model
 			return splits;
 		}
 
+		private Run LoadRunFromDatabase(UInt32 runId)
+		{
+			DataRow[] rowRuns = ChallengeRuns.Tables["Runs"]
+				.Select("ID = " + runId.ToString(), "ID ASC");
+			DataRow rowRun = rowRuns[0];
+
+			Run newRun = new Run();
+			newRun.RunId = runId;
+			newRun.Challenge = null; // TODO: Must I do this here?
+			UInt32 challengeId = Convert.ToUInt32(rowRun["ChallengeID"]);
+			newRun.StartDateTime = Convert.ToDateTime(rowRun["StartDateTime"]);
+			newRun.EndDateTime = Convert.ToDateTime(rowRun["EndDateTime"]);
+			newRun.Duration = TimeSpan.Parse(rowRun["Duration"].ToString());
+
+
+			// Get the Splits rows for the challenge.
+			DataRow[] rowSplits = ChallengeRuns.Tables["Splits"]
+				.Select("ChallengeID = " + challengeId.ToString(),
+						 "IndexWithinChallenge ASC");
+
+			// Get the Counts for this run based on the splits.
+			foreach (var split in rowSplits)
+			{
+				DataRow[] rowCount = ChallengeRuns.Tables["Counts"]
+					.Select("RunID = " + newRun.RunId + " AND SplitID = " + split["ID"]);
+
+				Count count = new Count();
+				count.CountId = Convert.ToUInt32(rowCount[0]["ID"]);
+				count.Value = (int)rowCount[0]["Value"];
+				count.Run = newRun;
+				count.Split = null;  // TODO: Must I do this here?
+
+				newRun.Counts.Add(count);
+			}
+
+			return newRun;
+		}
+
+		public Run CreateRun(Challenge Challenge)
+		{
+			Run newRun = new Run();
+			newRun.Challenge = Challenge;
+
+			// Create a new Runs row associated with this Challenge.
+			DataRow runRow = ChallengeRuns.Tables["Runs"].NewRow();
+			runRow["ChallengeID"] = Challenge.ChallengeId;
+			UInt32 runId = Convert.ToUInt32(runRow["ID"].ToString());
+			ChallengeRuns.Tables["Runs"].Rows.Add(runRow);
+
+			newRun.RunId = runId;
+
+			// For each split, create a row in the Counts table.
+			foreach (var split in Challenge.Splits)
+			{
+				// Create the new Counts row.
+				DataRow countRow = ChallengeRuns.Tables["Counts"].NewRow();
+				countRow["SplitID"] = Convert.ToUInt32(split.SplitId);
+				countRow["RunID"] = runId;
+				countRow["Value"] = 0;
+				ChallengeRuns.Tables["Counts"].Rows.Add(countRow);
+
+				// Create a new Count object.
+				Count newCount = new Count();
+				newCount.CountId = Convert.ToUInt32(countRow["ID"].ToString());
+				newCount.Value = 0; // TODO: Maybe -1?
+				newCount.Run = newRun;
+				newCount.Split = split;
+
+				newRun.Counts.Add(newCount);
+			}
+
+			// Save the changes to the database.
+			Save();
+
+			return newRun;
+		}
+
+#if false
 		public void StartNewRun(Challenge Challenge)
 		{
 			if (Challenge == null)
@@ -506,6 +585,7 @@ namespace Homunculus_Model
 
 			Save();
 		}
+#endif
 
 		public void Success(string ChallengeName)
 		{

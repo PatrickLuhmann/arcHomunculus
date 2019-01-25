@@ -193,8 +193,9 @@ namespace UnitTest_Homunculus_Model
 		{
 			// ARRANGE
 			string name = "new challenge";
-			
+
 			// ACT
+			TestModel.CreateChallenge("blah blah blah", SplitNamesBefore);
 			Challenge NewChal = TestModel.CreateChallenge(name, SplitNamesBefore);
 
 			// ASSERT
@@ -289,16 +290,58 @@ namespace UnitTest_Homunculus_Model
 
 			// ACT
 			// TODO: Should this be a method in the service, or in Challenge itself?
-			TestModel.StartNewRun(NewChallenge);
-			Challenge.StartNewRun();
+			//TestModel.StartNewRun(NewChallenge);
+			Run NewRun = NewChallenge.StartNewRun();
 
 			// ASSERT
-			List<Run> runList = TestModel.GetRuns(challengeName);
-			Assert.AreEqual(1, runList.Count);
-			Assert.AreEqual(SplitNamesBefore.Count, runList[0].SplitCounts.Count);
-			foreach (var count in runList[0].SplitCounts)
+
+			// Verify that the Run object returned is correct.
+			Assert.AreEqual(NewChallenge, NewRun.Challenge);
+			TimeSpan deltaStart = DateTime.Now - NewRun.StartDateTime;
+			TimeSpan thresholdTime = new TimeSpan(0, 1, 0);
+			Assert.IsTrue(deltaStart < thresholdTime);
+			Assert.AreEqual(0, NewRun.EndDateTime);
+			Assert.AreEqual(TimeSpan.Zero, NewRun.Duration);
+			Assert.AreEqual(SplitNamesBefore.Count, NewRun.Counts.Count);
+			foreach (var count in NewRun.Counts)
 			{
-				Assert.AreEqual(0, count);
+				Assert.AreEqual(0, count.Value);
+			}
+
+			// Then, verify that our Challenge object has been updated correctly.
+			// Otherwise we would need to re-read everything from the data store,
+			// which would not be efficient.
+			Assert.AreEqual(1, NewChallenge.Runs.Count);
+			Assert.AreEqual(0, NewChallenge.CurrentSplitIndex);
+			Assert.AreEqual(-1, NewChallenge.PBIndex); // no change
+			Assert.IsNull(NewChallenge.PBRun); // no change
+			Assert.AreSame(NewRun, NewChallenge.Runs[0]);
+
+			// Now, verify that the data store has been updated correctly.
+
+			// Create a new Model instance.
+			ModelXml NewTestModel = new ModelXml();
+
+			// Load the existing database file into the new Model.
+			NewTestModel.LoadDatabase(DefaultFilename);
+
+			// Get the challenges.
+			List<Challenge> AfterChallenges = NewTestModel.GetChallenges();
+
+			// Find NewChallenge.
+			Challenge AfterNewChallenge = AfterChallenges.Find(c => c.ChallengeId == NewChallenge.ChallengeId);
+			Assert.AreEqual(1, AfterNewChallenge.Runs.Count);
+			Assert.AreEqual(0, AfterNewChallenge.CurrentSplitIndex);
+			Assert.AreEqual(-1, AfterNewChallenge.PBIndex); // no change
+			Assert.IsNull(AfterNewChallenge.PBRun); // no change
+
+			// Verify the run.
+			ObservableCollection<Run> runList = AfterNewChallenge.Runs;
+			Assert.AreEqual(1, runList.Count);
+			Assert.AreEqual(SplitNamesBefore.Count, runList[0].Counts.Count);
+			foreach (var count in runList[0].Counts)
+			{
+				Assert.AreEqual(0, count.Value);
 			}
 		}
 

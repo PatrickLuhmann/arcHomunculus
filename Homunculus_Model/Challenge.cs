@@ -9,6 +9,8 @@ namespace Homunculus_Model
 {
 	public class Challenge
 	{
+		internal IHomunculusModel TheDataService;
+
 		public UInt32 ChallengeId { get; set; }
 
 		public string Name { get; set; }
@@ -18,8 +20,9 @@ namespace Homunculus_Model
 		public int PBIndex { get; set; }
 		public Run PBRun {get;set;}
 
-		public Challenge()
+		internal Challenge(IHomunculusModel service)
 		{
+			TheDataService = service;
 			ChallengeId = 0; // 0 means the object is not in the database.
 			Name = null;
 			Splits = new ObservableCollection<Split>();
@@ -27,6 +30,18 @@ namespace Homunculus_Model
 			CurrentSplitIndex = -1;
 			PBIndex = -1;
 			PBRun = null;
+		}
+
+		public Challenge() : this(null)
+		{
+		}
+
+		public Run StartNewRun()
+		{
+			// Create a new Run for this challenge.
+			Run newRun = TheDataService.CreateRun(this);
+
+			return newRun;
 		}
 	}
 }

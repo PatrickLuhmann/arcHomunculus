@@ -10,6 +10,7 @@ namespace Homunculus_Model
 	{
 		public UInt32 CountId { get; set; }
 
+		// TODO: Should Value be -1 for a split that hasn't been reached yet?
 		public int Value { get; set; }
 
 		public Run Run { get; set; }
