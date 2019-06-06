@@ -108,10 +108,9 @@ namespace Homunculus_Model
 			runs.Columns["ID"].AutoIncrementSeed = 1;
 			runs.Columns["ID"].AutoIncrementStep = 1;
 			runs.Columns.Add("ChallengeID", typeof(UInt32));
-			runs.Columns.Add("Closed", typeof(bool));
-			runs.Columns["Closed"].DefaultValue = false;
-			runs.Columns.Add("PB", typeof(bool));
-			runs.Columns["PB"].DefaultValue = false;
+			runs.Columns.Add("StartDateTime", typeof(DateTime));
+			runs.Columns.Add("EndDateTime", typeof(DateTime));
+			runs.Columns.Add("Duration", typeof(Int64)); // TimeSpan.Ticks (long)
 
 			// TABLE: Counts
 			DataTable counts = ChallengeRuns.Tables.Add("Counts");
@@ -175,8 +174,7 @@ namespace Homunculus_Model
 			Challenges.Rows.Add(row);
 
 			// Create the Challenge object to be returned.
-			Challenge NewChallenge = new Challenge();
-			NewChallenge.TheDataService = this;
+			Challenge NewChallenge = new Challenge(this);
 			NewChallenge.ChallengeId = challengeID;
 			NewChallenge.Name = ChallengeName;
 
@@ -197,6 +195,34 @@ namespace Homunculus_Model
 			Save();
 
 			return NewChallenge;
+		}
+
+		public void UpdateChallenge(Challenge Chall, Boolean DoSplits, Boolean DoRuns)
+		{
+			// Get the row from the Challenges table.
+			DataRow[] results = ChallengeRuns.Tables["Challenges"]
+				.Select("ID = '" + Chall.ChallengeId.ToString() + "'");
+			DataRow drChall = results[0];
+
+			// Update the properties.
+			drChall["Name"] = Chall.Name;
+			drChall["CurrentSplitIndex"] = Chall.CurrentSplitIndex;
+			drChall["PBIndex"] = Chall.PBIndex;
+			drChall["PBRunID"] = Chall.PBRun == null ? 0 : Chall.PBRun.RunId;
+
+			// Update the splits?
+			if (DoSplits)
+			{
+
+			}
+
+			// Update the runs?
+			if (DoRuns)
+			{
+
+			}
+
+			Save();
 		}
 
 		/// <summary>
@@ -336,7 +362,17 @@ namespace Homunculus_Model
 
 			// Save the data to the database file.
 			ChallengeRuns.WriteXml(DatabaseFilename, XmlWriteMode.WriteSchema);
-			System.Diagnostics.Debug.WriteLine("Model: data file saved - " + DatabaseFilename);
+			System.Diagnostics.Debug.WriteLine("Model.Save: data file saved - " + DatabaseFilename);
+		}
+
+		public void Update()
+		{
+			// Make sure there are no outstanding changes.
+			ChallengeRuns.AcceptChanges();
+
+			// Save the data to the database file.
+			ChallengeRuns.WriteXml(DatabaseFilename, XmlWriteMode.WriteSchema);
+			System.Diagnostics.Debug.WriteLine("Model.Update: data file updated - " + DatabaseFilename);
 		}
 
 		/// <summary>
@@ -353,6 +389,8 @@ namespace Homunculus_Model
 				Challenge newChallenge = new Challenge();
 				newChallenge.ChallengeId = Convert.ToUInt32(dr["ID"]);
 				newChallenge.Name = dr["Name"].ToString();
+				newChallenge.CurrentSplitIndex = Convert.ToInt32(dr["CurrentSplitIndex"]);
+				newChallenge.PBIndex = Convert.ToInt32(dr["PBIndex"]);
 
 				// Get the splits that go with this challenge.
 				DataRow[] rowSplits = ChallengeRuns.Tables["Splits"]
@@ -477,18 +515,28 @@ namespace Homunculus_Model
 			return newRun;
 		}
 
+		// TODO: Should CreateRun be public? I don't want the VM to call it, right?
 		public Run CreateRun(Challenge Challenge)
 		{
-			Run newRun = new Run();
-			newRun.Challenge = Challenge;
-
 			// Create a new Runs row associated with this Challenge.
+			// TODO: Should I create the Run object first, and then save it?
 			DataRow runRow = ChallengeRuns.Tables["Runs"].NewRow();
+			UInt32 runId = Convert.ToUInt32(runRow["ID"]);
 			runRow["ChallengeID"] = Challenge.ChallengeId;
-			UInt32 runId = Convert.ToUInt32(runRow["ID"].ToString());
+			runRow["StartDateTime"] = DateTime.Now;
+			runRow["EndDateTime"] = DateTime.MinValue;
+			runRow["Duration"] = TimeSpan.Zero.Ticks;
 			ChallengeRuns.Tables["Runs"].Rows.Add(runRow);
 
+			// Create the Run object.
+			// TODO: Should this be in a constructor that takes a DataRow?
+			//       It would also need to take the Challenge object.
+			Run newRun = new Run();
 			newRun.RunId = runId;
+			newRun.Challenge = Challenge;
+			newRun.StartDateTime = Convert.ToDateTime(runRow["StartDateTime"]);
+			newRun.EndDateTime = Convert.ToDateTime(runRow["EndDateTime"]);
+			newRun.Duration = new TimeSpan(Convert.ToInt64(runRow["Duration"]));
 
 			// For each split, create a row in the Counts table.
 			foreach (var split in Challenge.Splits)
@@ -497,10 +545,12 @@ namespace Homunculus_Model
 				DataRow countRow = ChallengeRuns.Tables["Counts"].NewRow();
 				countRow["SplitID"] = Convert.ToUInt32(split.SplitId);
 				countRow["RunID"] = runId;
-				countRow["Value"] = 0;
+				countRow["Value"] = 0; // TODO: Default -1 to show this split hasn't been reached yet?
 				ChallengeRuns.Tables["Counts"].Rows.Add(countRow);
 
 				// Create a new Count object.
+				// TODO: Should this be in a constructor that takes a DataRow?
+				//       It would also need to take the Run and Split objects.
 				Count newCount = new Count();
 				newCount.CountId = Convert.ToUInt32(countRow["ID"].ToString());
 				newCount.Value = 0; // TODO: Maybe -1?

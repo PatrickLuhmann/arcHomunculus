@@ -23,5 +23,9 @@ namespace Homunculus_Model
 
 
 		Run CreateRun(Challenge Challenge);
+
+		// TODO: experimental
+		void Update();
+		void UpdateChallenge(Challenge Chall, Boolean DoSplits, Boolean DoRuns);
 	}
 }
