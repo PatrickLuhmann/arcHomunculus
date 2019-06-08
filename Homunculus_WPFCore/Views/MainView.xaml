@@ -11,11 +11,15 @@
         <vms:MainVM/>
     </Window.DataContext>
     <Grid>
-        <StackPanel>
-            <TextBlock Text="{Binding Salutation}"></TextBlock>
-            <ContentControl>
-                <local:ChallengesView/>
-            </ContentControl>
-        </StackPanel>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <ContentControl Grid.Row="0" Grid.Column="0">
+            <local:ChallengesView/>
+        </ContentControl>
+        <ContentControl Grid.Row="0" Grid.Column="1">
+            <local:CurrentChallengeView/>
+        </ContentControl>
     </Grid>
 </Window>

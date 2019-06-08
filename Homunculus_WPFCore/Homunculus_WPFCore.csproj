@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <None Remove="Views\ChallengesView.xaml" />
+    <None Remove="Views\CurrentChallengeView.xaml" />
     <None Remove="Views\MainView.xaml" />
   </ItemGroup>
 
