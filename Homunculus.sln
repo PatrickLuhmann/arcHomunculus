@@ -13,7 +13,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest_Homunculus_Model",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest_ViewModel", "UnitTest_ViewModel\UnitTest_ViewModel.csproj", "{04E82C86-31EC-4480-BD72-6BF8F7418A88}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Homunculus_WPFCore", "Homunculus_WPFCore\Homunculus_WPFCore.csproj", "{A8EDAC5C-C032-4B37-B314-F4A0A1704EC4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Homunculus_WPFCore", "Homunculus_WPFCore\Homunculus_WPFCore.csproj", "{A8EDAC5C-C032-4B37-B314-F4A0A1704EC4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Homunculus_ModelCore", "Homunculus_ModelCore\Homunculus_ModelCore.csproj", "{5C5BC272-027C-4794-A7FD-5BB2F508DA5A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{A8EDAC5C-C032-4B37-B314-F4A0A1704EC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A8EDAC5C-C032-4B37-B314-F4A0A1704EC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A8EDAC5C-C032-4B37-B314-F4A0A1704EC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C5BC272-027C-4794-A7FD-5BB2F508DA5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C5BC272-027C-4794-A7FD-5BB2F508DA5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C5BC272-027C-4794-A7FD-5BB2F508DA5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C5BC272-027C-4794-A7FD-5BB2F508DA5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

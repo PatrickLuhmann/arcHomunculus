@@ -11,13 +11,18 @@
         <vms:ChallengesVM/>
     </UserControl.DataContext>
     <Grid>
-        <ListView ItemsSource="{Binding Challenges}">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}"/>
-                    <GridViewColumn Header="Runs" DisplayMemberBinding="{Binding NumRuns}"/>
-                </GridView>
-            </ListView.View>
-        </ListView>
+        <StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Button Command="{Binding RelayButtonAddChallenge}">New Challenge</Button>
+            </StackPanel>
+            <ListView ItemsSource="{Binding Challenges}">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}"/>
+                        <GridViewColumn Header="Runs" DisplayMemberBinding="{Binding NumRuns}"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </StackPanel>
     </Grid>
 </UserControl>
