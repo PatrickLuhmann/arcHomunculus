@@ -13,7 +13,6 @@ namespace Homunculus_WPFCore.ViewModels
 
 		public ChallengeVM()
 		{
-			//Name = "Default name";
 			NumRuns = 0;
 		}
 	}

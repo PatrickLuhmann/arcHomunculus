@@ -42,9 +42,6 @@ namespace Homunculus_ModelCore
 		public DataStoreDynamic()
 		{
 			Challenges = new List<ChallengeCore>();
-
-			// POC
-			Challenges.Add(new ChallengeCore { Name = "Challenge 1 [dyn]" });
 		}
 	}
 }

@@ -10,8 +10,8 @@ namespace Homunculus_WPFCore.ViewModels
 {
 	public class ChallengesVM : ViewModelBase
 	{
-//		public ObservableCollection<ChallengeVM> Challenges { get; set; }
-		public List<ChallengeVM> Challenges { get; set; }
+		public ObservableCollection<ChallengeVM> Challenges { get; set; }
+
 		private ChallengeVM selectedChallenge;
 		public ChallengeVM SelectedChallenge
 		{
@@ -25,8 +25,10 @@ namespace Homunculus_WPFCore.ViewModels
 				RaisePropertyChanged("SelectedChallenge");
 			}
 		}
+
 		public RelayCommand RelayButtonAddChallenge { get; private set; }
 		public RelayCommand RelayButtonDeleteChallenge { get; private set; }
+
 		private void AddChallenge()
 		{
 			var chall = MainVM.TheDynamicDataStore.CreateChallenge();
@@ -53,7 +55,7 @@ namespace Homunculus_WPFCore.ViewModels
 			RelayButtonAddChallenge = new RelayCommand(AddChallenge);
 			RelayButtonDeleteChallenge = new RelayCommand(DeleteChallenge);
 
-			Challenges = new List<ChallengeVM>();
+			Challenges = new ObservableCollection<ChallengeVM>();
 
 			// POC?
 			var challs = MainVM.TheDynamicDataStore.GetChallenges();

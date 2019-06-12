@@ -17,7 +17,8 @@ namespace Homunculus_WPFCore.ViewModels
 		{
 			TheNameOfTheDataStore = "Homunculuses R Us";
 
-			TheDynamicDataStore = new DataStoreDynamic();
+			if (TheDynamicDataStore == null)
+				TheDynamicDataStore = new DataStoreDynamic();
 
 			Salutation = "Greetings and felicitations to Homunculus [Core]";
 		}
