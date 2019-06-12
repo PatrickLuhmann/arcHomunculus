@@ -15,9 +15,11 @@
             <ColumnDefinition/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <ContentControl Grid.Row="0" Grid.Column="0">
-            <local:ChallengesView/>
-        </ContentControl>
+        <StackPanel Grid.Row="0" Grid.Column="0">
+            <Button Command="{Binding RelayButtonLoadDataStore}">Load Data Store</Button>
+            <Button Command="{Binding RelayButtonNewDataStore}">New Data Store</Button>
+            <UserControl Content="{Binding ViewForChallenges}"/>
+        </StackPanel>
         <ContentControl Grid.Row="0" Grid.Column="1">
             <local:CurrentChallengeView/>
         </ContentControl>
