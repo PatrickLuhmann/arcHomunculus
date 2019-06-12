@@ -14,11 +14,12 @@
         <StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Button Command="{Binding RelayButtonAddChallenge}">New Challenge</Button>
+                <Button Command="{Binding RelayButtonDeleteChallenge}">Delete Challenge</Button>
             </StackPanel>
-            <ListView ItemsSource="{Binding Challenges}">
+            <ListView ItemsSource="{Binding Challenges}" SelectedItem="{Binding SelectedChallenge}">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}"/>
+                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Challenge.Name}"/>
                         <GridViewColumn Header="Runs" DisplayMemberBinding="{Binding NumRuns}"/>
                     </GridView>
                 </ListView.View>
